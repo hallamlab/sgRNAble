@@ -1,0 +1,36 @@
+import numpy
+from Bio import SeqIO
+
+Target_Seq_Filename = "Fasta_Files/GFP.fasta"
+Genome_Filename = "Fasta_Files/E_coli_MG1655_Genome.fasta"
+count = 0
+Target = SeqIO.read(Target_Seq_Filename, "fasta")
+Genome = SeqIO.read(Genome_Filename, "fasta")
+Guide_RNA = []
+Sequence_test = "AGGGGGGGGGGGGTTTTTT"
+
+print(Guide_RNA)
+Target_Seq = Target.seq.upper()
+Genome_Seq = Genome.seq.upper()
+
+def PAM_Finder(Sequence, PAM):
+  j = 0
+  L_Sequence = Sequence
+  print("PAM is")
+  print(PAM)
+  while True:
+    i = L_Sequence.find(PAM)
+    if(i == -1):
+      break
+    print(i)
+    if(i > 20 ):
+      Guide_RNA.append(Sequence[(i-21):i-1])
+    L_Sequence = L_Sequence[i+2:]
+    j = j+1
+
+
+PAM_Finder(Target_Seq,"GG")
+
+Sequence_test = "AGGGGGGGGGGGGTTTTTT"
+
+print(Guide_RNA)
