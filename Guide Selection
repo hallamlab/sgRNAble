@@ -1,0 +1,4 @@
+import numpy
+from Bio import SeqIO
+
+#rid of direct copies

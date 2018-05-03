@@ -6,31 +6,32 @@ Genome_Filename = "Fasta_Files/E_coli_MG1655_Genome.fasta"
 count = 0
 Target = SeqIO.read(Target_Seq_Filename, "fasta")
 Genome = SeqIO.read(Genome_Filename, "fasta")
-Guide_RNA = []
-Sequence_test = "AGGGGGGGGGGGGTTTTTT"
+Guide_RNAs = []
+Guide_RNA_length = 20
 
-print(Guide_RNA)
 Target_Seq = Target.seq.upper()
 Genome_Seq = Genome.seq.upper()
+print(type(Target))
+print(type(Target_Seq))
 
-def PAM_Finder(Sequence, PAM):
-  j = 0
-  L_Sequence = Sequence
-  print("PAM is")
-  print(PAM)
+def PAM_Finder(Sequence, PAM, strand):
+  if (strand != 1 ):
+    Sequence = Sequence.reverse_complement
+  Position = 0
+  print(Sequence)
+  Temp_Sequence = Sequence
   while True:
-    i = L_Sequence.find(PAM)
+    i = Temp_Sequence.find(PAM)
     if(i == -1):
       break
-    print(i)
-    if(i > 20 ):
-      Guide_RNA.append(Sequence[(i-21):i-1])
-    L_Sequence = L_Sequence[i+2:]
-    j = j+1
+    Position = Position + i + 2
+    if(Position > Guide_RNA_length):
+        Guide_RNAs.append(Sequence[Position-23:Position])
+    Temp_Sequence = Temp_Sequence[i+2:]
 
+PAM_Finder(Target_Seq,"CC", 2)
 
-PAM_Finder(Target_Seq,"GG")
+for i in range (len(Guide_RNAs)):
+  print(Guide_RNAs[i])
 
-Sequence_test = "AGGGGGGGGGGGGTTTTTT"
-
-print(Guide_RNA)
+print(len(Guide_RNAs))
