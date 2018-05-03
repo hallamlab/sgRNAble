@@ -31,17 +31,21 @@ def PAM_Finder(Sequence, PAM, strand):
     Direction = -1
   Position = 0
   Temp_Sequence = Sequence
+  j = 0 #Variable for limiting time spent searching Genome
   while True:
     i = Temp_Sequence.find(PAM)
     if(i == -1):
-      break
+        break
+    if(j > 10000):
+        break
     Position = Position + i + 2
     if(Position > Guide_RNA_length):
-      if(Direction > 0):
-        Guide_RNAs.append(Sequence[Position-23:Position])
-      if(Direction < 0):
-        Guide_RNAs.append(Sequence[Position-2:Position+21])
+        if(Direction > 0):
+            Guide_RNAs.append(Sequence[Position-23:Position])
+        if(Direction < 0):
+            Guide_RNAs.append(Sequence[Position-2:Position+21])
     Temp_Sequence = Temp_Sequence[i+2:]
+    j = j+1
 
   return Guide_RNAs
 
@@ -81,5 +85,11 @@ T_Guides_CC = PAM_Finder(Target_Seq, "CC", 2)
 Target_Guides = Combine(T_Guides_GG, T_Guides_CC)
 
 #Obtain the all possible off target pam sites in the genome
+G_Guides_GG = PAM_Finder(Genome_Seq, "GG",1)
+G_Guides_CC = PAM_Finder(Genome_Seq, "CC", 2)
 
-messagebox.showinfo("Genome", "Found")
+#Print out Target Guides for testing
+print("\n".join(Target_Guides))
+
+
+messagebox.showinfo("Guides", "Found")
