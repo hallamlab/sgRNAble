@@ -5,10 +5,10 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 
 
-messagebox.showinfo("Target Sequence", "Please select a Target Sequence Fasta File")
+messagebox.showinfo("Target Sequence", "Please select the Target_Sequence.Fasta file")
 Tk().withdraw()
 Target_Seq_Filename  = askopenfilename()
-print(Target_Seq_Filename)
+
 
 Genome_Filename = "Fasta_Files/E_coli_MG1655_Genome.fasta"
 Target = SeqIO.read(Target_Seq_Filename, "fasta")
@@ -73,15 +73,13 @@ def reverse_complement(nucleotide_sequence):
   rev_comp = ''.join(reversed(comp))
   return rev_comp
 
+messagebox.showinfo("Searching", "Please Wait")
 #Obtain the Guide RNAs from the Target Sequence
 T_Guides_GG = PAM_Finder(Target_Seq, "GG",1)
 T_Guides_CC = PAM_Finder(Target_Seq, "CC", 2)
 
 Target_Guides = Combine(T_Guides_GG, T_Guides_CC)
-print(Target_Guides)
-
-
-
-
 
 #Obtain the all possible off target pam sites in the genome
+
+messagebox.showinfo("Genome", "Found")
