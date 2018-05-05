@@ -1,6 +1,53 @@
-from tkinter import Tk
+from tkinter import *
 from tkinter.filedialog import askopenfilename
+from Bio import SeqIO
+from tkinter import messagebox
 
-Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-Target_Seq_Filename  = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-print(Target_Seq_Filename)
+
+def Get_Sequence ():
+
+    root = Tk()
+    root.title("Target Sequence")
+
+
+    messagebox.showinfo("Target Sequence", "Please select the Target Sequence file")
+
+
+    # Add a grid
+    mainframe = Frame(root)
+    mainframe.grid(column=0,row=0, sticky=(N,W,E,S) )
+    mainframe.columnconfigure(0, weight = 1)
+    mainframe.rowconfigure(0, weight = 1)
+    mainframe.pack(pady = 100, padx = 100)
+
+    # Create a Tkinter variable
+    tkvar = StringVar(root)
+
+    # Dictionary with options
+    Options = [ "Fasta", "Genebank",]
+    tkvar.set('Fasta') # set the default option
+
+    popupMenu = OptionMenu(mainframe, tkvar, *Options)
+    Label(mainframe, text="Choose the file type of the Target Sequence").grid(row = 1, column = 1)
+    popupMenu.grid(row = 2, column =1)
+
+    def ok():
+        root.quit()
+
+    button = Button(root, text="OK", command=ok)
+    button.pack()
+
+    root.mainloop()
+
+    Filetype = tkvar.get()
+    Filename  = askopenfilename()
+    File_Info = [ Filename, Filetype ]
+    print(Filetype)
+    print(Filename)
+    return File_Info
+
+Target_Seq_File  = Get_Sequence()
+
+Target = SeqIO.read(Target_Seq_File[0], Target_Seq_File[1] )
+
+print(Target.Seq)

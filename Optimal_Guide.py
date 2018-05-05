@@ -1,8 +1,9 @@
 import numpy
 from Bio import SeqIO
-from tkinter import Tk
-from tkinter import messagebox
+from tkinter import *
 from tkinter.filedialog import askopenfilename
+from tkinter import messagebox
+
 
 
 messagebox.showinfo("Target Sequence", "Please select the Target_Sequence.Fasta file")
