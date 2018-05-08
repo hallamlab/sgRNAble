@@ -33,7 +33,7 @@ def Get_Files (Title, Repeat):
     tkvar = StringVar(root)
 
     # Dictionary with options
-    Options = [ "Fasta", "Genebank",]
+    Options = [ "Fasta", "Genbank",]
     tkvar.set('Fasta') # set the default option
 
     popupMenu = OptionMenu(mainframe, tkvar, *Options)

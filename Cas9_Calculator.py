@@ -89,12 +89,13 @@ class sgRNA(object):
 
 	def run(self):
 
-		begin_time = time()
-
 		targetDictionary = self.Cas9Calculator.targetDictionary
-		numTargetsReturned = 10
+		numTargetsReturned = 5
+
 		for Guide in self.guideSequences:
 			print(Guide)
+			begin_time = time()
+			self.partition_function = 1
 			for (source, targets) in targetDictionary.items():
 				self.targetSequenceEnergetics[source] = {}
 				for fullPAM in self.Cas9Calculator.returnAllPAMs():
@@ -120,7 +121,7 @@ class sgRNA(object):
 					percentPartitionFunction = 100 * math.exp(-info['dG_target'] / self.Cas9Calculator.RT) / self.partition_function
 					print("%s\t\t\t%s\t\t\t%s\t\t\t%s" % (str(position), info['sequence'], str(round(info['dG_target'],2)), str(percentPartitionFunction) ))
 
-		end_time = time()
+			end_time = time()
 
 		print("Elapsed Time: ", end_time - begin_time)
 
