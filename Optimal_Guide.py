@@ -33,7 +33,7 @@ def Get_Files (Title, Repeat):
     tkvar = StringVar(root)
 
     # Dictionary with options
-    Options = [ "Fasta", "Genebank",]
+    Options = [ "Fasta", "Genbank",]
     tkvar.set('Fasta') # set the default option
 
     popupMenu = OptionMenu(mainframe, tkvar, *Options)
@@ -146,7 +146,7 @@ T_Guides_CC = PAM_Finder(Target_Seq, "CC", -1)
 
 Target_Guides = CombinetoStr(T_Guides_GG, T_Guides_CC)
 
-i = 0
+
 for Guide in Target_Guides:
 
         print(Guide)
@@ -154,7 +154,3 @@ for Guide in Target_Guides:
         sgRNA1 = sgRNA(Guide, Cas9Calculator)
         sgRNA1.run()
         sgRNA1.printTopTargets()
-        i += 1
-        print("Next Guide : " + Target_Guides[i])
-        if (i == 2 ):
-            break

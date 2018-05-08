@@ -116,7 +116,7 @@ class sgRNA(object):
 
         print("Elapsed Time: ", end_time - begin_time)
 
-    def printTopTargets(self, numTargetsReturned = 100):
+    def printTopTargets(self, numTargetsReturned = 10):
 
         for (source, targets) in list(self.targetSequenceEnergetics.items()):
             print("SOURCE: %s" % source)
