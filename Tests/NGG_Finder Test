@@ -1,8 +1,8 @@
 import numpy as np
 from Bio import SeqIO
 
-Target_Seq_Filename = "../Fasta_Files/GFP.fasta"
-Genome_Filename = "../Fasta_Files/E_coli_MG1655_Genome.fasta"
+Target_Seq_Filename = "/Users/siddarthraghuvanshi/Documents/Code/CRISPR_Guide_RNA/Fasta_Files/GFP.fasta"
+Genome_Filename = "/Users/siddarthraghuvanshi/Documents/Code/CRISPR_Guide_RNA/Fasta_Files/Tiplasmidsequence.fasta"
 count = 0
 Target = SeqIO.read(Target_Seq_Filename, "fasta")
 Genome = SeqIO.read(Genome_Filename, "fasta")
@@ -11,8 +11,6 @@ Guide_RNA_length = 20
 
 Target_Seq = Target.seq.upper()
 Genome_Seq = Genome.seq.upper()
-print(type(Target))
-print(type(Target_Seq))
 
 def PAM_Finder(Sequence, PAM, Direction):
   Guide_RNAs = []
@@ -35,6 +33,8 @@ def PAM_Finder(Sequence, PAM, Direction):
             Strand.append(Direction)
             Guide_RNAs.append(Sequence[Position-23:Position-3])
         if(Direction < 0):
+            Location.append(Position + 1)
+            Strand.append(Direction)
             Guide_RNAs.append(Sequence[Position+1:Position+21])
     Temp_Sequence = Temp_Sequence[i+2:]
     j = j+1
@@ -78,8 +78,7 @@ Guide_Info = np.vstack((Position_List, Direction_List)).T
 
 Target_Guides = CombinetoStr(T_Guides_Pos, T_Guides_Neg)
 
-for i in range (len(Guide_RNAs)):
-  print(Guide_RNAs[i])
-  print(Guide_Info[0][i])
-  print(Guide_Info[1][i])
-print(len(Guide_RNAs))
+for i in range (len(Target_Guides)):
+  print(Target_Guides[i])
+  print(Guide_Info[i][0])
+  print(Guide_Info[i][1])
