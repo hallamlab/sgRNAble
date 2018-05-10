@@ -4,7 +4,6 @@ import operator
 from time import time
 from Bio import SeqIO
 import csv
-import dill
 
 def mers(length):
 	"""Generates multimers for sorting through list of 10mers based on user
@@ -123,7 +122,7 @@ class sgRNA(object):
 
 			end_time = time()
 
-		print("Elapsed Time: ", end_time - begin_time)
+			print("Elapsed Time: ", end_time - begin_time)
 
 class clCas9Calculator(object):
 
@@ -299,7 +298,6 @@ if __name__ == "__main__":
 	Cas9Calculator=clCas9Calculator(['../GenomeCalculations/NC_000913.gbk'])
 	sgRNA1 = sgRNA(guideSequences, Cas9Calculator)
 	sgRNA1.run()
-	sgRNA1.exportAsDill()
 
 	print(sgRNA1)
 

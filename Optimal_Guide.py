@@ -147,5 +147,5 @@ T_Guides_CC = PAM_Finder(Target_Seq, "CC", -1)
 Target_Guides = CombinetoStr(T_Guides_GG, T_Guides_CC)
 
 Cas9Calculator=clCas9Calculator(['Total_Genome_Plus_RC'])
-sgRNA1 = sgRNA(Target_Guides, Cas9Calculator)
+sgRNA1 = sgRNA(Target_Guides, Cas9Calculator)T
 sgRNA1.run()
