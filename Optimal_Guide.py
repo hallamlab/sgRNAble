@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from Bio.Alphabet import generic_dna
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -85,6 +85,8 @@ Guide_RNA_length = 20
 #Find the Guide RNAs in a Sequence
 def PAM_Finder(Sequence, PAM, Direction):
   Guide_RNAs = []
+  Location = []
+  Strand = []
 
   Position = 0
   Temp_Sequence = Sequence
@@ -98,13 +100,17 @@ def PAM_Finder(Sequence, PAM, Direction):
     Position = Position + i + 2
     if(Position > Guide_RNA_length):
         if(Direction > 0):
+            Location.append(Position - 2)
+            Strand.append(Direction)
             Guide_RNAs.append(Sequence[Position-23:Position-3])
         if(Direction < 0):
+            Location.append(Position + 1)
+            Strand.append(Direction)
             Guide_RNAs.append(Sequence[Position+1:Position+21])
     Temp_Sequence = Temp_Sequence[i+2:]
     j = j+1
 
-  return Guide_RNAs
+  return Guide_RNAs,Location,Strand
 
 #Combine the Coding and Template Strands into a single strand
 def CombinetoStr (Template_Guides, Coding_Guides):
@@ -141,11 +147,18 @@ SeqIO.write(Genome, "Total_Genome_Plus_RC", "fasta")
 
 messagebox.showinfo("Searching", "Please Wait")
 #Obtain the Guide RNAs from the Target Sequence
-T_Guides_GG = PAM_Finder(Target_Seq, "GG",1)
-T_Guides_CC = PAM_Finder(Target_Seq, "CC", -1)
+T_Guides_Pos, Position_Pos, Direction_Pos = PAM_Finder(Target_Seq, "GG",1)
+T_Guides_Neg, Position_Neg, Direction_Neg = PAM_Finder(Target_Seq, "CC", -1)
 
-Target_Guides = CombinetoStr(T_Guides_GG, T_Guides_CC)
+#Combine the information from the Guide RNAs into one single array.
+Position_List = Position_Pos + Position_Neg
+Direction_List = Direction_Pos + Direction_Neg
+Guide_Info = np.vstack((Position_List, Direction_List)).T
 
+#Combine the two guides
+Target_Guides = CombinetoStr(T_Guides_Pos, T_Guides_Neg)
+
+#Send Data to the model
 Cas9Calculator=clCas9Calculator(['Total_Genome_Plus_RC'])
-sgRNA1 = sgRNA(Target_Guides, Cas9Calculator)T
+sgRNA1 = sgRNA(Target_Guides,Guide_Info, Cas9Calculator)
 sgRNA1.run()

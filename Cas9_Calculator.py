@@ -76,10 +76,11 @@ def identifyTargetSequencesMatchingPAM(PAM_seq, positions_at_mers, full_sequence
 
 class sgRNA(object):
 
-	def __init__(self, guideSequences, Cas9Calculator):
+	def __init__(self, guideSequences, guideinfo, Cas9Calculator):
 
 		self.guideSequences = guideSequences
 		self.Cas9Calculator = Cas9Calculator
+		self.guideinfo = guideinfo
 
 		self.partition_function = 1
 		self.targetSequenceEnergetics = {}
@@ -90,10 +91,12 @@ class sgRNA(object):
 
 		targetDictionary = self.Cas9Calculator.targetDictionary
 		numTargetsReturned = 5
-
+		i = 0
 		for Guide in self.guideSequences:
 			print(Guide)
 			begin_time = time()
+			print(self.guideinfo[i][0])
+			print(self.guideinfo[i][1])
 			self.partition_function = 1
 			for (source, targets) in targetDictionary.items():
 				self.targetSequenceEnergetics[source] = {}
@@ -121,8 +124,10 @@ class sgRNA(object):
 					print("%s\t\t\t%s\t\t\t%s\t\t\t%s" % (str(position), info['sequence'], str(round(info['dG_target'],2)), str(percentPartitionFunction) ))
 
 			end_time = time()
+			i = i + 1
 
 			print("Elapsed Time: ", end_time - begin_time)
+			print()
 
 class clCas9Calculator(object):
 

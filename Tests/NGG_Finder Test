@@ -77,8 +77,3 @@ Direction_List = Direction_Pos + Direction_Neg
 Guide_Info = np.vstack((Position_List, Direction_List)).T
 
 Target_Guides = CombinetoStr(T_Guides_Pos, T_Guides_Neg)
-
-for i in range (len(Target_Guides)):
-  print(Target_Guides[i])
-  print(Guide_Info[i][0])
-  print(Guide_Info[i][1])
