@@ -3,7 +3,7 @@ import math
 import operator
 from time import time
 from Bio import SeqIO
-import csv
+import xlsxwriter
 
 def mers(length):
 	"""Generates multimers for sorting through list of 10mers based on user
@@ -92,6 +92,13 @@ class sgRNA(object):
 		targetDictionary = self.Cas9Calculator.targetDictionary
 		numTargetsReturned = 5
 		i = 0
+
+		workbook = xlsxwriter.Workbook('Guide RNAs.xlsx')
+		worksheet = workbook.add_worksheet()
+
+		row = 0
+		col = 0
+
 		for Guide in self.guideSequences:
 			print(Guide)
 			begin_time = time()
@@ -114,20 +121,41 @@ class sgRNA(object):
 																			 'dG_target': dG_target}
 						self.partition_function += math.exp(-dG_target / self.Cas9Calculator.RT)
 
+
+			worksheet.write(row, col, Guide)
+			worksheet.write(row, col + 1, "Position in Target Sequence is:")
+			worksheet.write(row, col + 2, self.guideinfo[i][0])
+			worksheet.write(row, col + 3, "Strand is:")
+			worksheet.write(row, col + 4, self.guideinfo[i][1])
+			worksheet.write(row + 2, col, "Position in Genome")
+			worksheet.write(row + 2, col + 1, "Binding site")
+			worksheet.write(row + 2, col + 2, "dG_Target" )
+			worksheet.write(row + 2, col + 3, "Partition Function" )
+			row = row + 3
+
 			for (source, targets) in list(self.targetSequenceEnergetics.items()):
 				print("SOURCE: %s" % source)
 
 				sortedTargetList = sorted(list(targets.items()), key = lambda k_v: k_v[1]['dG_target'])  #sort by smallest to largest dG_target
 				print("POSITION\t\tTarget Sequence\t\tdG_Target\t\t% Partition Function")
+				j = 0
 				for (position, info) in sortedTargetList[0:numTargetsReturned]:
 					percentPartitionFunction = 100 * math.exp(-info['dG_target'] / self.Cas9Calculator.RT) / self.partition_function
 					print("%s\t\t\t%s\t\t\t%s\t\t\t%s" % (str(position), info['sequence'], str(round(info['dG_target'],2)), str(percentPartitionFunction) ))
+					worksheet.write(row, col, str(position) )
+					worksheet.write(row, col + 1, info['sequence'] )
+					worksheet.write(row, col + 2, str(round(info['dG_target'],2)) )
+					worksheet.write(row, col + 3, str(percentPartitionFunction) )
+					row = row + 1
 
 			end_time = time()
 			i = i + 1
 
 			print("Elapsed Time: ", end_time - begin_time)
 			print()
+			row += 1
+
+		workbook.close()
 
 class clCas9Calculator(object):
 
