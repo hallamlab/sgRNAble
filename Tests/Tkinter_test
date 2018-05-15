@@ -9,75 +9,57 @@ Win.title("Guide RNA Finder")
 def End():
     Win.quit()
 
-def Filename():
-    Filename = askopenfilename()
-    T_FileName["text"] = os.path.basename(Filename)
+def File():
+    File = askopenfilename()
+    FileName["text"] = os.path.basename(File)
     print(Filename)
-
 
 def Add():
     Done.pack_forget()
-    More.pack_forget()
-    F_More.pack()
-    More.pack()
+    A_Seq.pack_forget()
+    Organizer("Additional Sequnce", "R")
+    A_Seq.pack()
     Done.pack(pady = 50)
 
-def Remove():
-    F_More.pack_forget()
+def Get_Rid(Type):
+    print(Type)
 
-#Headers
-T_Heading = Label(Win, text = "Please select the Target Sequence File")
-G_Heading = Label(Win, text = "Please select the Genome Sequence File")
-A_Heading = Label(Win, text = "Do you wish to add any additional sequences such as plasmids")
+#Function to create headings and buttons
+def Organizer(Heading, Type ):
+    Prompt = Label(Win, text = Heading)
+    F = Frame(Win)
+    Prompt.pack(pady = 5, padx = 100)
+    if (Type == "A"):
+        More = Button(F,text = "Add More", command = Add)
+        More.pack()
+    else:
+        Formats = [ "Fasta", "Genbank"]
+        Type_Var = StringVar(Win)
+        Type_Var.set("Fasta")
+        FileType = OptionMenu(F, Type_Var, Formats)
+        FileName = Button(F,text = "File Name", command = File)
+        FileName.grid(row = 0, column = 2)
+        FileType.grid(row = 0, column = 4)
 
-# File Type Variable
-T_Var = StringVar(Win)
-G_Var = StringVar(Win)
+        if(Type == "R"):
+            Remove = Button(F,text = "Remove", command = lambda: Get_Rid())
+            Remove.grid(row = 0, column = 6)
+            F.pack()
 
-#Options for the File Types
-Options = [ "Fasta", "Genbank"]
-T_Var.set('Fasta')
-G_Var.set('Fasta')
+    return F
 
-#Target Sequence Buttons and Menus
-F_T = Frame(Win)
-T_FileName = Button(F_T,text = "File Name", command = Filename)
-T_FileType = OptionMenu(F_T, T_Var, *Options)
-T_FileName.grid(row = 0, column = 2)
-T_FileType.grid(row = 0, column = 4)
+#Sequences to work on
+T_Seq = Organizer("Please select the Target Sequence File", "T")
+T_Seq.pack()
 
-#Genome Sequence Buttons and Menus
-F_G = Frame(Win)
-G_FileName = Button(F_G,text = "File Name", command = Filename)
-G_FileType = OptionMenu(F_G, G_Var, *Options)
-G_FileType.grid(row = 0, column = 4)
-G_FileName.grid(row = 0, column = 2)
+G_Seq = Organizer("Please select the Genome Sequence File", "G")
+G_Seq.pack()
 
-#Add more Sequence Buttons
-F_A = Frame(Win)
-More = Button(text = "Add", command = Add)
+A_Seq= Organizer("Do you wish to add any additional sequences such as plasmids", "A")
+A_Seq.pack()
 
-#Additional Sequnce Buttons
-F_More = Frame(Win)
-M_FileName = Button(F_More,text = "File Name", command = Filename)
-M_FileType = OptionMenu(F_More, G_Var, *Options)
-M_Remove = Button(F_More,text = "Remove", command = Remove)
-M_FileType.grid(row = 0, column = 4)
-M_FileName.grid(row = 0, column = 2)
-M_Remove.grid(row = 0, column = 6)
-
-#Done Buttons
+#Done Button
 Done = Button(Win, text = "Done", command = End)
-
-T_Heading.pack(pady = 5, padx = 100)
-F_T.pack(pady = 1, padx = 1)
-G_Heading.pack(pady = 5, padx = 100)
-F_G.pack(pady = 1, padx = 1)
-A_Heading.pack(pady = 5, padx = 100)
-More.pack()
 Done.pack(pady = 50)
 
 Win.mainloop()
-
-print(T_Var.get().lower())
-print(G_Var.get().lower())
