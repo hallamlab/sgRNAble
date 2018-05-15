@@ -1,0 +1,83 @@
+from tkinter import *
+from tkinter.filedialog import askopenfilename
+import os
+
+Win=Tk()
+Win.title("Guide RNA Finder")
+
+#Button Functions
+def End():
+    Win.quit()
+
+def Filename():
+    Filename = askopenfilename()
+    T_FileName["text"] = os.path.basename(Filename)
+    print(Filename)
+
+
+def Add():
+    Done.pack_forget()
+    More.pack_forget()
+    F_More.pack()
+    More.pack()
+    Done.pack(pady = 50)
+
+def Remove():
+    F_More.pack_forget()
+
+#Headers
+T_Heading = Label(Win, text = "Please select the Target Sequence File")
+G_Heading = Label(Win, text = "Please select the Genome Sequence File")
+A_Heading = Label(Win, text = "Do you wish to add any additional sequences such as plasmids")
+
+# File Type Variable
+T_Var = StringVar(Win)
+G_Var = StringVar(Win)
+
+#Options for the File Types
+Options = [ "Fasta", "Genbank"]
+T_Var.set('Fasta')
+G_Var.set('Fasta')
+
+#Target Sequence Buttons and Menus
+F_T = Frame(Win)
+T_FileName = Button(F_T,text = "File Name", command = Filename)
+T_FileType = OptionMenu(F_T, T_Var, *Options)
+T_FileName.grid(row = 0, column = 2)
+T_FileType.grid(row = 0, column = 4)
+
+#Genome Sequence Buttons and Menus
+F_G = Frame(Win)
+G_FileName = Button(F_G,text = "File Name", command = Filename)
+G_FileType = OptionMenu(F_G, G_Var, *Options)
+G_FileType.grid(row = 0, column = 4)
+G_FileName.grid(row = 0, column = 2)
+
+#Add more Sequence Buttons
+F_A = Frame(Win)
+More = Button(text = "Add", command = Add)
+
+#Additional Sequnce Buttons
+F_More = Frame(Win)
+M_FileName = Button(F_More,text = "File Name", command = Filename)
+M_FileType = OptionMenu(F_More, G_Var, *Options)
+M_Remove = Button(F_More,text = "Remove", command = Remove)
+M_FileType.grid(row = 0, column = 4)
+M_FileName.grid(row = 0, column = 2)
+M_Remove.grid(row = 0, column = 6)
+
+#Done Buttons
+Done = Button(Win, text = "Done", command = End)
+
+T_Heading.pack(pady = 5, padx = 100)
+F_T.pack(pady = 1, padx = 1)
+G_Heading.pack(pady = 5, padx = 100)
+F_G.pack(pady = 1, padx = 1)
+A_Heading.pack(pady = 5, padx = 100)
+More.pack()
+Done.pack(pady = 50)
+
+Win.mainloop()
+
+print(T_Var.get().lower())
+print(G_Var.get().lower())
