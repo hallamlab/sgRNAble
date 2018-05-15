@@ -9,10 +9,10 @@ Win.title("Guide RNA Finder")
 def End():
     Win.quit()
 
-def File():
+def File(FileName):
     File = askopenfilename()
     FileName["text"] = os.path.basename(File)
-    print(Filename)
+    print(File)
 
 def Add():
     Done.pack_forget()
@@ -21,8 +21,10 @@ def Add():
     A_Seq.pack()
     Done.pack(pady = 50)
 
-def Get_Rid(Type):
-    print(Type)
+def Get_Rid(Frame, Prompt):
+    Frame.pack_forget()
+    Prompt.pack_forget()
+
 
 #Function to create headings and buttons
 def Organizer(Heading, Type ):
@@ -36,13 +38,13 @@ def Organizer(Heading, Type ):
         Formats = [ "Fasta", "Genbank"]
         Type_Var = StringVar(Win)
         Type_Var.set("Fasta")
-        FileType = OptionMenu(F, Type_Var, Formats)
-        FileName = Button(F,text = "File Name", command = File)
+        FileType = OptionMenu(F, Type_Var, *Formats)
+        FileName = Button(F,text = "File Name", command = lambda: File(FileName))
         FileName.grid(row = 0, column = 2)
         FileType.grid(row = 0, column = 4)
 
         if(Type == "R"):
-            Remove = Button(F,text = "Remove", command = lambda: Get_Rid())
+            Remove = Button(F,text = "Remove", command = lambda: Get_Rid(F,Prompt))
             Remove.grid(row = 0, column = 6)
             F.pack()
 
