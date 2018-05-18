@@ -23,7 +23,7 @@ def Get_Sequence():
             elif not(Genome_Created):
                 Genome = SeqIO.read(Program.Files[0][i], Program.Filetypes[i].get().lower())
             else:
-                Geone  = Genome + SeqIO.read(Program.Files[0][i], Program.Filetypes[1].get().lower())
+                Genome  = Genome + SeqIO.read(Program.Files[0][i], Program.Filetypes[1].get().lower())
         else:
             pass
 
