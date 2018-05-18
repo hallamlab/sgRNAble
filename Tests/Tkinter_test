@@ -4,7 +4,6 @@ import os
 
 Win=Tk()
 Win.title("Guide RNA Finder")
-
 #Button Functions
 def End():
     Win.quit()
@@ -12,7 +11,7 @@ def End():
 def File(FileName):
     File = askopenfilename()
     FileName["text"] = os.path.basename(File)
-    print(File)
+
 
 def Add():
     Done.pack_forget()
@@ -24,7 +23,6 @@ def Add():
 def Get_Rid(Frame, Prompt):
     Frame.pack_forget()
     Prompt.pack_forget()
-
 
 #Function to create headings and buttons
 def Organizer(Heading, Type ):

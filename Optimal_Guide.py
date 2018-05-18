@@ -2,80 +2,30 @@ import numpy as np
 from Bio.Alphabet import generic_dna
 from Bio import SeqIO
 from Bio.Seq import Seq
-from tkinter import *
-from tkinter.filedialog import askopenfilename
-from tkinter import messagebox
 from Cas9_Calculator import *
+from File_GUI import *
 
-
-def Get_Files (Title, Repeat):
-
-    root = Tk()
-    Message = "Please select the " + Title + " file"
-    More_Seqs = True
-
-    # Add a grid
-    mainframe = Frame(root)
-    mainframe.grid(column=0,row=0, sticky=(N,W,E,S) )
-    mainframe.columnconfigure(0, weight = 1)
-    mainframe.rowconfigure(0, weight = 1)
-    mainframe.pack(pady = 100, padx = 100)
-
-    if(Repeat):
-        Message = "Please select an " + Title + " file"
-        More_Seqs = messagebox.askyesno( Title,"Would you like to add Additional Sequences to the genome \n (Such as Plasmids)")
-        if not(More_Seqs):
-            return 1
-
-    messagebox.showinfo(Title, "Please select the file type")
-
-    # Create a Tkinter variable
-    tkvar = StringVar(root)
-
-    # Dictionary with options
-    Options = [ "Fasta", "Genbank",]
-    tkvar.set('Fasta') # set the default option
-
-    popupMenu = OptionMenu(mainframe, tkvar, *Options)
-    Type = "Choose the file type of the " + Title
-    Label(mainframe, text= Type).grid(row = 1, column = 1)
-    popupMenu.grid(row = 2, column =1)
-
-    def ok():
-        root.quit()
-        root.withdraw()
-
-    Button2 = Button(root, text="OK", command=ok)
-    Button2.pack()
-
-    root.mainloop()
-
-    Filetype = tkvar.get()
-    Filetype = Filetype.lower()
-
-    messagebox.showinfo(Title, Message)
-    Filename  = askopenfilename()
-
-    File_Info = [ Filename, Filetype ]
-
-    root.withdraw()
-    return File_Info
 
 def Get_Sequence():
-    Target_Seq_File = Get_Files("Target Sequence", False)
-    Genome_Seq_File = Get_Files("Genome Sequence", False)
 
-    Target = SeqIO.read(Target_Seq_File[0], Target_Seq_File[1] )
-    Genome = SeqIO.read(Genome_Seq_File[0], Genome_Seq_File[1] )
+    Root = Tk()
+    Program = GUI(Root)
+    Program.run()
+    Root.mainloop()
+    i = 0
+    Genome_Created = False
 
-    Additional_Seq_File = Get_Files("Additional Sequence", True)
-    if not(Additional_Seq_File == 1):
-        Genome = Genome + SeqIO.read(Additional_Seq_File[0], Additional_Seq_File[1] )
 
-    while not (Additional_Seq_File == 1 ):
-         Additional_Seq_File = Get_Files("Additional Sequence", True)
-         if not(Additional_Seq_File == 1):
-            Genome = Genome + SeqIO.read(Additional_Seq_File[0], Additional_Seq_File[1] )
+    for i in range(len(Program.Filetypes)):
+        if not(Program.Filetypes[i] == 0):
+            if(Program.Files[1][i] == "TARGET"):
+                Target = SeqIO.read(Program.Files[0][i], Program.Filetypes[0].get().lower())
+            elif not(Genome_Created):
+                Genome = SeqIO.read(Program.Files[0][i], Program.Filetypes[i].get().lower())
+            else:
+                Geone  = Genome + SeqIO.read(Program.Files[0][i], Program.Filetypes[1].get().lower())
+        else:
+            pass
 
     return Target.seq.upper(), Genome.upper()
 
@@ -145,7 +95,6 @@ Target_Seq, Genome = Get_Sequence()
 Genome = Genome + Genome.reverse_complement()
 SeqIO.write(Genome, "Total_Genome_Plus_RC", "fasta")
 
-messagebox.showinfo("Searching", "Please Wait")
 #Obtain the Guide RNAs from the Target Sequence
 T_Guides_Pos, Position_Pos, Direction_Pos = PAM_Finder(Target_Seq, "GG",1)
 T_Guides_Neg, Position_Neg, Direction_Neg = PAM_Finder(Target_Seq, "CC", -1)
