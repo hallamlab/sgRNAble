@@ -2,30 +2,33 @@ import numpy as np
 from Bio.Alphabet import generic_dna
 from Bio import SeqIO
 from Bio.Seq import Seq
+import argparse
 from Cas9_Calculator import *
-from File_GUI import *
+from argparse import RawTextHelpFormatter
 
 
+#Parser to get the files listed in the arguments
+
+#Creating the parser
+parser = argparse.ArgumentParser(description="""This program helps you to find all possible guide RNAs that will \ntarget the gene. Then using the model created by Salis Lab, \nyou can see the off target effects for the each possible guide.""", formatter_class=RawTextHelpFormatter)
+
+#Parsers to add arguements.
+parser.add_argument("-t", "--target_sequence", required=True, help= "The Gene Sequence of Interest (Fasta or Genebank)")
+parser.add_argument("-g", "--genome_sequence", required=True, nargs = '+', help= "The Genome of the organism, if targeting a plasmid, make sure to \n include it as well (Fasta or Genebank)")
+parser.add_argument("-k", "--kind", required=False, help= " a: CRISPR activation \n i: CRISPR interference \n Leave Blank to see all possible off target effects of your sequence")
+
+#Creating a variable to make the values easily accessible
+args = parser.parse_args()
+
+# Returns the upper case sequences as strings from the files given as arguments. Also combines the various genome sequences
 def Get_Sequence():
 
-    Root = Tk()
-    Program = GUI(Root)
-    Program.run()
-    Root.mainloop()
-    i = 0
-    Genome_Created = False
+    Target = SeqIO.read(args.target_sequence, args.genome_sequence[0].split('.')[1]) #Reads the file using biopython and creates a object called target
 
-
-    for i in range(len(Program.Filetypes)):
-        if not(Program.Filetypes[i] == 0):
-            if(Program.Files[1][i] == "TARGET"):
-                Target = SeqIO.read(Program.Files[0][i], Program.Filetypes[0].get().lower())
-            elif not(Genome_Created):
-                Genome = SeqIO.read(Program.Files[0][i], Program.Filetypes[i].get().lower())
-            else:
-                Genome  = Genome + SeqIO.read(Program.Files[0][i], Program.Filetypes[1].get().lower())
-        else:
-            pass
+    #Reads the Genome files using biopython and combines them into one genome object
+    Genome = SeqIO.read(args.genome_sequence[0], args.genome_sequence[0].split('.')[1])
+    for i in range(1,len(args.genome_sequence)):
+        Genome  = Genome + SeqIO.read(args.genome_sequence[i], args.genome_sequence[0].split('.')[1])
 
     return Target.seq.upper(), Genome.upper()
 
@@ -40,12 +43,9 @@ def PAM_Finder(Sequence, PAM, Direction):
 
   Position = 0
   Temp_Sequence = Sequence
-  j = 0 #Variable for limiting time spent searching Genome
   while True:
     i = Temp_Sequence.find(PAM)
     if(i == -1):
-        break
-    if(j > 10000):
         break
     Position = Position + i + 2
     if(Position > Guide_RNA_length):
@@ -58,11 +58,10 @@ def PAM_Finder(Sequence, PAM, Direction):
             Strand.append(Direction)
             Guide_RNAs.append(Sequence[Position+1:Position+21])
     Temp_Sequence = Temp_Sequence[i+2:]
-    j = j+1
 
   return Guide_RNAs,Location,Strand
 
-#Combine the Coding and Template Strands into a single strand
+#Combine the Coding and Template Strands into a single strand and converts that into a string
 def CombinetoStr (Template_Guides, Coding_Guides):
   Guides = []
 
@@ -76,6 +75,7 @@ def CombinetoStr (Template_Guides, Coding_Guides):
 
   return Guides
 
+#Reverse a strand
 def ReverseComplement(nucleotide_sequence):
   comp = []
   for c in nucleotide_sequence:
