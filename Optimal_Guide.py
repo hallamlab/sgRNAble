@@ -129,7 +129,7 @@ def main():
 
     #Build the model
     __start = time.time()
-    Cas9Calculator=clCas9Calculator(['Total_Genome_Plus_RC'])
+    Cas9Calculator=clCas9Calculator(['Run_Genome_Plus_RC'])
     #if args.aim == "g":
         #different target guides
     sgRNA_Created = sgRNA(guide_list, Target_Dict, Cas9Calculator)
