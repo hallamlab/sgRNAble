@@ -140,7 +140,7 @@ def main():
     __start = time.time()
     sgRNA_Created.run()
     __elasped = (time.time() - __start)
-    print("Time model calculation: {:.2f}".format(__elapsed))
+    print("Time model calculation: {:.2f}".format(__elasped))
 
 if __name__ == "__main__":
     main()
