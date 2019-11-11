@@ -3,7 +3,8 @@ import math
 import operator
 from time import time
 from Bio import SeqIO
-import xlsxwriter
+#more import xlsxwriter
+PRINT = False
 
 def mers(length):
 	"""Generates multimers for sorting through list of 10mers based on user
@@ -75,12 +76,11 @@ def identifyTargetSequencesMatchingPAM(PAM_seq, positions_at_mers, full_sequence
 	return target_sequence_list
 
 class sgRNA(object):
+	def __init__(self, guide_list, target_orf_dict, Cas9Calculator):
 
-	def __init__(self, guideSequences, guideinfo, Cas9Calculator):
-
-		self.guideSequences = guideSequences
+		self.guide_list= guide_list
 		self.Cas9Calculator = Cas9Calculator
-		self.guideinfo = guideinfo
+		self.target_orf_dict = target_orf_dict
 
 		self.partition_function = 1
 		self.targetSequenceEnergetics = {}
@@ -93,69 +93,79 @@ class sgRNA(object):
 		numTargetsReturned = 5
 		i = 0
 
-		workbook = xlsxwriter.Workbook('Guide RNAs.xlsx')
-		worksheet = workbook.add_worksheet()
+		num_offsite_targets = 0
+		for (source, targets) in targetDictionary.items():
+			for fullPAM in self.Cas9Calculator.returnAllPAMs():
+				num_offsite_targets += len(targetDictionary[source][fullPAM])
+		print("num offsite targets\n", num_offsite_targets)
 
-		row = 0
-		col = 0
+		num_offsite_targets = 0
+		for orf in self.guide_list:
+			for pos in self.guide_list[orf][0]:
+				Guide = self.target_orf_dict[orf][pos: pos + 20]
+				print(Guide)
+				num_offsite_targets = 0
 
-		for Guide in self.guideSequences:
-			print(Guide)
-			begin_time = time()
-			print(self.guideinfo[i][0])
-			print(self.guideinfo[i][1])
-			self.partition_function = 1
-			for (source, targets) in targetDictionary.items():
-				self.targetSequenceEnergetics[source] = {}
-				for fullPAM in self.Cas9Calculator.returnAllPAMs():
-					dG_PAM = self.Cas9Calculator.calc_dG_PAM(fullPAM)
-					dG_supercoiling = self.Cas9Calculator.calc_dG_supercoiling(sigmaInitial=-0.05, targetSequence= 20 * "N")  #only cares about length of sequence
-					for (target_sequence, targetPosition) in targetDictionary[source][fullPAM]:
-						dG_exchange = self.Cas9Calculator.calc_dG_exchange(Guide, target_sequence)
-						dG_target = dG_PAM + dG_supercoiling + dG_exchange
-						self.targetSequenceEnergetics[source][targetPosition] = {'sequence': target_sequence,
-																			 'dG_PAM': dG_PAM,
-																			 'full_PAM': fullPAM,
-																			 'dG_exchange': dG_exchange,
-																			 'dG_supercoiling': dG_supercoiling,
-																			 'dG_target': dG_target}
-						self.partition_function += math.exp(-dG_target / self.Cas9Calculator.RT)
+				begin_time = time()
+				#print(self.guideinfo[i][0])
+				#print(self.guideinfo[i][1])
+				self.partition_function = 1
+				for (source, targets) in targetDictionary.items():
+					#print("source ", source)
+					self.targetSequenceEnergetics[source] = {}
+					for fullPAM in self.Cas9Calculator.returnAllPAMs():
+						#dG_PAM = self.Cas9Calculator.calc_dG_PAM(fullPAM)
+						dG_PAM = 0
+						dG_supercoiling= 0
+						#dG_supercoiling = self.Cas9Calculator.calc_dG_supercoiling(sigmaInitial=-0.05, targetSequence= 20 * "N")  #only cares about length of sequence
+						for (target_sequence, targetPosition) in targetDictionary[source][fullPAM]:
+							#dG_exchange = self.Cas9Calculator.calc_dG_exchange(Guide, target_sequence)
+
+							#dG_target = dG_PAM + dG_supercoiling + dG_exchange
+							dG_exchange = 0
+
+							dG_target = dG_PAM + dG_supercoiling + dG_exchange
 
 
-			worksheet.write(row, col, Guide)
-			worksheet.write(row, col + 1, "Position in Target Sequence is:")
-			worksheet.write(row, col + 2, self.guideinfo[i][0])
-			worksheet.write(row, col + 3, "Strand is:")
-			worksheet.write(row, col + 4, self.guideinfo[i][1])
-			worksheet.write(row + 2, col, "Position in Genome")
-			worksheet.write(row + 2, col + 1, "Binding site")
-			worksheet.write(row + 2, col + 2, "dG_Target" )
-			worksheet.write(row + 2, col + 3, "Partition Function" )
-			row = row + 3
+							num_offsite_targets = num_offsite_targets + 1
+							#if num_offsite_targets%1000 == 0:
+							#	print(" tested {}".format(num_offsite_targets))
+							self.targetSequenceEnergetics[source][targetPosition] = {'sequence': target_sequence, 'dG_PAM': dG_PAM, 'full_PAM': fullPAM, 'dG_exchange': dG_exchange, 'dG_supercoiling': dG_supercoiling, 'dG_target': dG_target}
+							self.partition_function += math.exp(-dG_target / self.Cas9Calculator.RT)
 
-			for (source, targets) in list(self.targetSequenceEnergetics.items()):
-				print("SOURCE: %s" % source)
 
-				sortedTargetList = sorted(list(targets.items()), key = lambda k_v: k_v[1]['dG_target'])  #sort by smallest to largest dG_target
-				print("POSITION\t\tTarget Sequence\t\tdG_Target\t\t% Partition Function")
-				j = 0
-				for (position, info) in sortedTargetList[0:numTargetsReturned]:
-					percentPartitionFunction = 100 * math.exp(-info['dG_target'] / self.Cas9Calculator.RT) / self.partition_function
-					print("%s\t\t\t%s\t\t\t%s\t\t\t%s" % (str(position), info['sequence'], str(round(info['dG_target'],2)), str(percentPartitionFunction) ))
-					worksheet.write(row, col, str(position) )
-					worksheet.write(row, col + 1, info['sequence'] )
-					worksheet.write(row, col + 2, str(round(info['dG_target'],2)) )
-					worksheet.write(row, col + 3, str(percentPartitionFunction) )
-					row = row + 1
+				if PRINT:
+					print( '\t'.join(["No. " + str(i +1), Guide, "Position in Target Seq:",
+						str(self.guideinfo[i][0] ), "Strand :", str(self.guideinfo[i][1] ) ]))
+				#print("\n")
+				#print('\t'.join( [	"Position in Genome", "Binding site", "dG_Target", "Partition Function"] ))
 
-			end_time = time()
-			i = i + 1
+				for (source, targets) in list(self.targetSequenceEnergetics.items()):
+					#print("SOURCE: %s" % source)
 
-			print("Elapsed Time: ", end_time - begin_time)
-			print()
-			row += 1
+					sortedTargetList = sorted(list(targets.items()), key = lambda k_v: k_v[1]['dG_target'])  #sort by smallest to largest dG_target
+					if PRINT:
+						print("POSITION\tTarget Sequence\tdG_Target\t% Partition Function")
+					j = 0
+					for (position, info) in sortedTargetList[0:numTargetsReturned]:
+						percentPartitionFunction = 100 * math.exp(-info['dG_target'] / self.Cas9Calculator.RT) / self.partition_function
+						if PRINT:
+							print("%s\t%s\t%s\t%s" % (str(position), \
+								info['sequence'], str(round(info['dG_target'],2)),\
+								 str(percentPartitionFunction) ))
+							print( '\t'.join(  [ str(position), info['sequence'],\
+						    	str(round(info['dG_target'], 2)), str(percentPartitionFunction) ]))
 
-		workbook.close()
+
+				end_time = time()
+				i = i + 1
+
+				print("Elapsed Time: {:.2f}".format(end_time - begin_time))
+				#print()
+				if PRINT:
+					print("\n\n")
+
+		#workbook.close()
 
 class clCas9Calculator(object):
 
@@ -189,11 +199,15 @@ class clCas9Calculator(object):
 			record = next(records)
 			handle.close()
 
+
 			fullSequence = str(record.seq)
+			print("full seq length", len(record.seq))
 			positionsAtMers = identifyNucleotidePositionsOfMers(fullSequence, length = 10)
+			print("computed positions")
 			targetDictionary[filename] = {}
 			targetSequenceList = []
 			for fullPAM in self.returnAllPAMs():
+				print("Full PAM", fullPAM)
 				targetSequenceList = identifyTargetSequencesMatchingPAM(fullPAM, positionsAtMers, fullSequence)
 				targetDictionary[filename][fullPAM] = targetSequenceList
 			self.targetDictionary = targetDictionary
@@ -325,11 +339,10 @@ class clCas9Calculator(object):
 		return dG_supercoiling
 
 if __name__ == "__main__":
-
 	guideSequence = 'TACGTACACAAGAGCTCTAG'
 
 	Cas9Calculator=clCas9Calculator(['../GenomeCalculations/NC_000913.gbk'])
-	sgRNA1 = sgRNA(guideSequences, Cas9Calculator)
+	sgRNA1 = sgRNA(guideSequence, Cas9Calculator)
 	sgRNA1.run()
 
 	print(sgRNA1)
