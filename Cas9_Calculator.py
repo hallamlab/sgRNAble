@@ -4,7 +4,7 @@ import operator
 from time import time
 from Bio import SeqIO
 #more import xlsxwriter
-PRINT = False
+PRINT = True
 
 def mers(length):
 	"""Generates multimers for sorting through list of 10mers based on user
@@ -76,11 +76,11 @@ def identifyTargetSequencesMatchingPAM(PAM_seq, positions_at_mers, full_sequence
 	return target_sequence_list
 
 class sgRNA(object):
-	def __init__(self, guide_list, target_orf_dict, Cas9Calculator):
+	def __init__(self, guide_info, Cas9Calculator, args):
 
-		self.guide_list= guide_list
+		self.guide_info= guide_info
 		self.Cas9Calculator = Cas9Calculator
-		self.target_orf_dict = target_orf_dict
+		self.args = args
 
 		self.partition_function = 1
 		self.targetSequenceEnergetics = {}
@@ -89,43 +89,39 @@ class sgRNA(object):
 
 	def run(self):
 
-		targetDictionary = self.Cas9Calculator.targetDictionary
+		genomeDictionary = self.Cas9Calculator.genomeDictionary
 		numTargetsReturned = 5
-		i = 0
 
 		num_offsite_targets = 0
-		for (source, targets) in targetDictionary.items():
+		for (source, targets) in genomeDictionary.items():
 			for fullPAM in self.Cas9Calculator.returnAllPAMs():
-				num_offsite_targets += len(targetDictionary[source][fullPAM])
+				num_offsite_targets += len(genomeDictionary[source][fullPAM])
 		print("num offsite targets\n", num_offsite_targets)
 
 		num_offsite_targets = 0
-		for orf in self.guide_list:
-			for pos in self.guide_list[orf][0]:
-				Guide = self.target_orf_dict[orf][pos: pos + 20]
+		for gene in self.guide_info:
+			for i,Guide in enumerate(self.guide_info[gene][0]):
+				print("Guide")
 				print(Guide)
 				num_offsite_targets = 0
 
 				begin_time = time()
-				#print(self.guideinfo[i][0])
-				#print(self.guideinfo[i][1])
+
 				self.partition_function = 1
-				for (source, targets) in targetDictionary.items():
+
+				for (source, targets) in genomeDictionary.items():
 					#print("source ", source)
 					self.targetSequenceEnergetics[source] = {}
 					for fullPAM in self.Cas9Calculator.returnAllPAMs():
-						#dG_PAM = self.Cas9Calculator.calc_dG_PAM(fullPAM)
-						dG_PAM = 0
-						dG_supercoiling= 0
-						#dG_supercoiling = self.Cas9Calculator.calc_dG_supercoiling(sigmaInitial=-0.05, targetSequence= 20 * "N")  #only cares about length of sequence
-						for (target_sequence, targetPosition) in targetDictionary[source][fullPAM]:
-							#dG_exchange = self.Cas9Calculator.calc_dG_exchange(Guide, target_sequence)
-
-							#dG_target = dG_PAM + dG_supercoiling + dG_exchange
-							dG_exchange = 0
+						dG_PAM = self.Cas9Calculator.calc_dG_PAM(fullPAM)
+						#dG_PAM = 0
+						#dG_supercoiling= 0
+						dG_supercoiling = self.Cas9Calculator.calc_dG_supercoiling(sigmaInitial=-0.05, targetSequence= 20 * "N")  #only cares about length of sequence
+						for (target_sequence, targetPosition) in genomeDictionary[source][fullPAM]:
+							dG_exchange = self.Cas9Calculator.calc_dG_exchange(Guide, target_sequence)
+							#dG_exchange = 0
 
 							dG_target = dG_PAM + dG_supercoiling + dG_exchange
-
 
 							num_offsite_targets = num_offsite_targets + 1
 							#if num_offsite_targets%1000 == 0:
@@ -135,8 +131,10 @@ class sgRNA(object):
 
 
 				if PRINT:
-					print( '\t'.join(["No. " + str(i +1), Guide, "Position in Target Seq:",
-						str(self.guideinfo[i][0] ), "Strand :", str(self.guideinfo[i][1] ) ]))
+					print('\t' + "No." + str(i +1))
+					print('\t' +  Guide)
+					print('\t' + "Position in Target Seq:" + str(self.guide_info[gene][1][i]))
+					print('\t' + "Strand: " + str(self.guide_info[gene][2][i]) + '\n')
 				#print("\n")
 				#print('\t'.join( [	"Position in Genome", "Binding site", "dG_Target", "Partition Function"] ))
 
@@ -151,25 +149,21 @@ class sgRNA(object):
 						percentPartitionFunction = 100 * math.exp(-info['dG_target'] / self.Cas9Calculator.RT) / self.partition_function
 						if PRINT:
 							print("%s\t%s\t%s\t%s" % (str(position), \
-								info['sequence'], str(round(info['dG_target'],2)),\
+								(" "*3 + info['sequence']), str(round(info['dG_target'],2)),\
 								 str(percentPartitionFunction) ))
-							print( '\t'.join(  [ str(position), info['sequence'],\
+							print( '\t'.join(  [ str(position), (" "*3 +info['sequence']),\
 						    	str(round(info['dG_target'], 2)), str(percentPartitionFunction) ]))
 
-
 				end_time = time()
-				i = i + 1
 
 				print("Elapsed Time: {:.2f}".format(end_time - begin_time))
 				#print()
 				if PRINT:
 					print("\n\n")
 
-		#workbook.close()
-
 class clCas9Calculator(object):
 
-	def __init__(self,filename_list, quickmode=True, ModelName='InvitroModel.mat'):
+	def __init__(self,filename, quickmode=True, ModelName='InvitroModel.mat'):
 
 		self.quickmode=quickmode
 		self.ModelName=ModelName
@@ -181,7 +175,7 @@ class clCas9Calculator(object):
 		# the PAMs with the highest dG, ignoring other PAM sequences by setting their dG to 0
 		self.PAM_energy={'GGA':-9.8,'GGT':-10,'GGC':-10,'GGG':-9.9,'CGG':-8.1,'TGG':-7.8,'AGG':-8.1,'AGC':-8.1,'AGT':-8.1,'AGA':-7.9,'GCT':-7.1,'GCG':-6.9,'ATT':-7.2,'ATC':-6.4,'TTT':-7.6,'TTG':-6.8,'GTA':-7.4,'GTT':-7.9,'GTG':-7.7,'AAT':-7,'AAG':-7,'TAT':-7.2,'TAG':-7.2,'GAA':-7.2,'GAT':-7.3,'GAC':-7.2,'GAG':-7.3}
 
-		self.initTargetFinder(filename_list)
+		self.initGenomeFinder(filename)
 
 	def returnAllPAMs(self):
 
@@ -189,28 +183,26 @@ class clCas9Calculator(object):
 			for nt in ('A','G','C','T'):        #nt + PAMpart will be all possible 'NGGT'
 				yield nt + PAMpart
 
-	def initTargetFinder(self, filename_list):
+	def initGenomeFinder(self, filename):
 
-		targetDictionary = {}
+		genomeDictionary = {}
 
-		for filename in filename_list:
-			handle = open(filename,'r')
-			records = SeqIO.parse(handle,"fasta")
-			record = next(records)
-			handle.close()
+		handle = open(filename,'r')
+		records = SeqIO.parse(handle,"fasta")
+		record = next(records)
+		handle.close()
 
-
-			fullSequence = str(record.seq)
-			print("full seq length", len(record.seq))
-			positionsAtMers = identifyNucleotidePositionsOfMers(fullSequence, length = 10)
-			print("computed positions")
-			targetDictionary[filename] = {}
-			targetSequenceList = []
-			for fullPAM in self.returnAllPAMs():
-				print("Full PAM", fullPAM)
-				targetSequenceList = identifyTargetSequencesMatchingPAM(fullPAM, positionsAtMers, fullSequence)
-				targetDictionary[filename][fullPAM] = targetSequenceList
-			self.targetDictionary = targetDictionary
+		fullSequence = str(record.seq)
+		print("full seq length", len(record.seq))
+		positionsAtMers = identifyNucleotidePositionsOfMers(fullSequence, length = 10)
+		print("computed positions")
+		genomeDictionary[filename] = {}
+		targetSequenceList = []
+		for fullPAM in self.returnAllPAMs():
+			print("Full PAM", fullPAM)
+			targetSequenceList = identifyTargetSequencesMatchingPAM(fullPAM, positionsAtMers, fullSequence)
+			genomeDictionary[filename][fullPAM] = targetSequenceList
+		self.genomeDictionary = genomeDictionary
 
 	def printModelInfo(self):
 		m=0

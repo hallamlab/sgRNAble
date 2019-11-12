@@ -47,7 +47,7 @@ def PAM_Finder(Sequence,args):
             break
 
         if potential_guide_location > 0 and not discard:
-            Locations.append(potential_guide_location)
+            Locations.append(potential_guide_location - 1)
 
         Position = Position + i + 1
 
@@ -87,14 +87,24 @@ def main():
     #Default aim, the tool looks for all avalible guides possibly found in the sequence given by the user
     if args.aim == "d":
         for gene in Target_Dict:
+            #Get guides on the positive strand
             guide_list[gene] = []
-            PosLocations = PAM_Finder(Target_Dict[gene], args)
-            guide_list[gene].append(PosLocations)
+            Locations = PAM_Finder(Target_Dict[gene], args)
+            strand_array = ["Positive"] * len(Locations)
 
-            Locations = PAM_Finder(Seq.reverse_complement(Target_Dict[gene]), args)
+            #Get guides on the negative strand
+            NegLocations = PAM_Finder(Seq.reverse_complement(Target_Dict[gene]), args)
             Sequence_length = len(Target_Dict[gene])
-            NegLocations = [Sequence_length - x for x in Locations]
-            guide_list[gene].append(NegLocations)
+            NegLocations = [Sequence_length - x for x in NegLocations]
+            negative_array = ["Negative"] * len(NegLocations)
+
+            #Combine the information into a single array for each gene
+            Locations.extend(NegLocations)
+            strand_array.extend(negative_array)
+            guides = [str(Target_Dict[gene][loc:loc+args.guide_length]) for loc in Locations ]
+            guides.extend([str(Target_Dict[gene][loc+1:loc+1+args.guide_length]) for loc in NegLocations ])
+            guide_list[gene].extend([guides, Locations, strand_array])
+
     elif args.aim == "i":
         #only runs the negative strand as CRISPRi works better on negative strands
         for gene in Target_Dict:
@@ -129,10 +139,10 @@ def main():
 
     #Build the model
     __start = time.time()
-    Cas9Calculator=clCas9Calculator(['Run_Genome_Plus_RC'])
+    Cas9Calculator=clCas9Calculator('Run_Genome_Plus_RC')
     #if args.aim == "g":
         #different target guides
-    sgRNA_Created = sgRNA(guide_list, Target_Dict, Cas9Calculator)
+    sgRNA_Created = sgRNA(guide_list, Cas9Calculator, args)
     __elasped = (time.time() - __start)
     print("Time Model Building: {:.2f}".format(__elasped))
 
