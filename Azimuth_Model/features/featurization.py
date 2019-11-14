@@ -4,7 +4,7 @@ import sklearn
 import numpy as np
 import Bio.SeqUtils as SeqUtil
 import Bio.Seq as Seq
-import azimuth.util
+import Azimuth_Model.util
 import sys
 import Bio.SeqUtils.MeltingTemp as Tm
 import pickle

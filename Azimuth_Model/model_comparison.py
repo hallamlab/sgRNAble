@@ -1,15 +1,15 @@
-import azimuth.predict as pd
+import Azimuth_Model.predict as apd
 import copy
 import os
 import numpy as np
-import azimuth.util
+import Azimuth_Model.util
 import shutil
 import pickle
 import pylab as plt
 import pandas
-import azimuth.local_multiprocessing
-import azimuth.load_data
-import azimuth.features.featurization as feat
+import Azimuth_Model.local_multiprocessing
+import Azimuth_Model.load_data
+import Azimuth_Model.features.featurization as feat
 
 def check_feature_set_dims(feature_sets):
     F2 = None
@@ -192,7 +192,7 @@ def shared_setup(learn_options, order, test):
     if 'num_thread_per_proc' not in list(learn_options.keys()):
         learn_options['num_thread_per_proc'] = None
 
-    num_proc = azimuth.local_multiprocessing.configure(TEST=test, num_proc=learn_options["num_proc"],
+    num_proc = Azimuth_Model.local_multiprocessing.configure(TEST=test, num_proc=learn_options["num_proc"],
                                                 num_thread_per_proc=learn_options["num_thread_per_proc"])
     learn_options["num_proc"] = num_proc
 
@@ -259,7 +259,7 @@ def setup(test=False, order=1, learn_options=None, data_file=None, pam_audit=Tru
     if learn_options["testing_non_binary_target_name"] not in ['ranks', 'raw', 'thrs']:
         raise Exception('learn_otions["testing_non_binary_target_name"] must be in ["ranks", "raw", "thrs"]')
 
-    Xdf, Y, gene_position, target_genes = azimuth.load_data.from_file(data_file, learn_options)
+    Xdf, Y, gene_position, target_genes = Azimuth_Model.load_data.from_file(data_file, learn_options)
     learn_options['all_genes'] = target_genes
 
     if test:
@@ -268,7 +268,7 @@ def setup(test=False, order=1, learn_options=None, data_file=None, pam_audit=Tru
     if 'convert_30mer_to_31mer' in learn_options and learn_options['convert_30mer_to_31mer'] is True:
         print("WARNING!!! converting 30 mer to 31 mer (and then cutting off first nucleotide to go back to 30mer with a right shift)")
         for i in range(Xdf.shape[0]):
-            Xdf['30mer'].iloc[i] = azimuth.util.convert_to_thirty_one(Xdf.iloc[i]["30mer"], Xdf.index.values[i][1], Xdf.iloc[i]["Strand"])
+            Xdf['30mer'].iloc[i] = Azimuth_Model.util.convert_to_thirty_one(Xdf.iloc[i]["30mer"], Xdf.index.values[i][1], Xdf.iloc[i]["Strand"])
         # to_keep = Xdf['30mer'].isnull() == False
         # Xdf = Xdf[to_keep]
         # gene_position = gene_position[to_keep]
@@ -353,7 +353,7 @@ def run_models(models, orders, GP_likelihoods=['gaussian', 'warped'], WD_kernel_
                     if model != 'AdaBoost':
                         model_string = feat_models_short[model] + '_ord%d_%s' % (learn_options_set[learn_options_str]["order"], learn_options_str)
 
-                    results[model_string] = pd.cross_validate(Y, feature_sets, learn_options=learn_options_model, TEST=test, CV=CV)
+                    results[model_string] = apd.cross_validate(Y, feature_sets, learn_options=learn_options_model, TEST=test, CV=CV)
 
                     all_learn_options[model_string] = learn_options_model
             # if the model doesn't require explicit featurization
@@ -372,15 +372,15 @@ def run_models(models, orders, GP_likelihoods=['gaussian', 'warped'], WD_kernel_
                         for degree in WD_kernel_degrees:
                             learn_options_model = GP_setup(copy.deepcopy(learn_options), likelihood=likelihood, degree=degree)
                             model_string = '%s_%s_degree%d_%s' % (model, likelihood, degree, learn_options_str)
-                            results[model_string] = pd.cross_validate(Y, feature_sets, learn_options=learn_options_model,TEST=test, CV=CV)
+                            results[model_string] = apd.cross_validate(Y, feature_sets, learn_options=learn_options_model,TEST=test, CV=CV)
 
                 else:
                     raise NotImplementedError("model %s not supported" % model)
 
-                # "GP" already calls pd.cross_validate() and has its own model_string, so skip this.
+                # "GP" already calls apd.cross_validate() and has its own model_string, so skip this.
                 if model != "GP":
                     model_string = model + '_%s' % learn_options_str
-                    results[model_string] = pd.cross_validate(Y, feature_sets, learn_options=learn_options_model, TEST=test, CV=CV)
+                    results[model_string] = apd.cross_validate(Y, feature_sets, learn_options=learn_options_model, TEST=test, CV=CV)
 
             all_learn_options[model_string] = learn_options_model
 
@@ -404,8 +404,8 @@ def runner(models, learn_options, GP_likelihoods=None, orders=None, WD_kernel_de
 
     if where == 'local':
         results, all_learn_options = run_models(models, orders=orders, GP_likelihoods=GP_likelihoods, learn_options_set=learn_options, WD_kernel_degrees=WD_kernel_degrees, test=test, **kwargs)
-        all_metrics, gene_names = azimuth.util.get_all_metrics(results, learn_options)
-        azimuth.util.plot_all_metrics(all_metrics, gene_names, all_learn_options, save=True)
+        all_metrics, gene_names = Azimuth_Model.util.get_all_metrics(results, learn_options)
+        Azimuth_Model.util.plot_all_metrics(all_metrics, gene_names, all_learn_options, save=True)
 
         # for non-local (i.e. cluster), the comparable code is in cli_run_model.py
         pickle_runner_results(exp_name, results, all_learn_options)
@@ -416,17 +416,17 @@ def runner(models, learn_options, GP_likelihoods=None, orders=None, WD_kernel_de
         from . import cluster_job
 
         # create random cluster directory, dump learn options, and create cluster file
-        tempdir, user, clust_filename = cluster_job.create(cluster_user, models, orders, WD_kernel_degrees, GP_likelihoods, exp_name=exp_name, learn_options=learn_options, **kwargs)
+        temapdir, user, clust_filename = cluster_job.create(cluster_user, models, orders, WD_kernel_degrees, GP_likelihoods, exp_name=exp_name, learn_options=learn_options, **kwargs)
 
         # raw_input("Submit job to HPC and press any key when it's finished: ")
-        # util.plot_cluster_results(directory=tempdir)
+        # util.plot_cluster_results(directory=temapdir)
 
-        #stdout = tempdir + r"/stdout"
-        #stderr = tempdir + r"/stderr"
+        #stdout = temapdir + r"/stdout"
+        #stderr = temapdir + r"/stderr"
         #if not os.path.exists(stdout): os.makedirs(stdout)
         #if not os.path.exists(stderr): os.makedirs(stderr)
 
-        return tempdir, clust_filename, user#, stdout, stderr
+        return temapdir, clust_filename, user#, stdout, stderr
 
 def save_final_model_V3(filename=None, include_position=True, learn_options=None, short_name='final', pam_audit=True, length_audit=True):
     '''
@@ -438,8 +438,8 @@ def save_final_model_V3(filename=None, include_position=True, learn_options=None
     if learn_options is None:
         if include_position:
             learn_options = {"V": 3,
-                        'train_genes': azimuth.load_data.get_V3_genes(),
-                        'test_genes': azimuth.load_data.get_V3_genes(),
+                        'train_genes': Azimuth_Model.load_data.get_V3_genes(),
+                        'test_genes': Azimuth_Model.load_data.get_V3_genes(),
                         "testing_non_binary_target_name": 'ranks',
                         'include_pi_nuc_feat': True,
                         "gc_features": True,
@@ -465,8 +465,8 @@ def save_final_model_V3(filename=None, include_position=True, learn_options=None
                         }
         else:
             learn_options = {"V": 3,
-                'train_genes': azimuth.load_data.get_V3_genes(),
-                'test_genes': azimuth.load_data.get_V3_genes(),
+                'train_genes': Azimuth_Model.load_data.get_V3_genes(),
+                'test_genes': Azimuth_Model.load_data.get_V3_genes(),
                 "testing_non_binary_target_name": 'ranks',
                 'include_pi_nuc_feat': True,
                 "gc_features": True,
@@ -535,7 +535,7 @@ def predict(seq, aa_cut=None, percent_peptide=None, model=None, model_file=None,
 
 
     if model_file is None:
-        azimuth_saved_model_dir = os.path.join(os.path.dirname(azimuth.__file__), 'saved_models')
+        azimuth_saved_model_dir = os.path.join(os.path.dirname(Azimuth_Model.__file__), 'saved_models')
         if np.any(percent_peptide == -1) or (percent_peptide is None and aa_cut is None):
             #print("No model file specified, using V3_model_nopos")
             model_name = 'V3_model_nopos.pickle'
@@ -556,7 +556,7 @@ def predict(seq, aa_cut=None, percent_peptide=None, model=None, model_file=None,
     learn_options = override_learn_options(learn_options_override, learn_options)
 
     # Y, feature_sets, target_genes, learn_options, num_proc = setup(test=False, order=2, learn_options=learn_options, data_file=test_filename)
-    # inputs, dim, dimsum, feature_names = pd.concatenate_feature_sets(feature_sets)
+    # inputs, dim, dimsum, feature_names = apd.concatenate_feature_sets(feature_sets)
 
     Xdf = pandas.DataFrame(columns=['30mer', 'Strand'], data=list(zip(seq, ['NA' for x in range(len(seq))])))
 
@@ -566,11 +566,11 @@ def predict(seq, aa_cut=None, percent_peptide=None, model=None, model_file=None,
         gene_position = pandas.DataFrame(columns=['Percent Peptide', 'Amino Acid Cut position'], data=list(zip(np.ones(seq.shape[0])*-1, np.ones(seq.shape[0])*-1)))
 
     feature_sets = feat.featurize_data(Xdf, learn_options, pandas.DataFrame(), gene_position, pam_audit=pam_audit, length_audit=length_audit)
-    inputs, dim, dimsum, feature_names = azimuth.util.concatenate_feature_sets(feature_sets)
+    inputs, dim, dimsum, feature_names = Azimuth_Model.util.concatenate_feature_sets(feature_sets)
 
     #print "CRISPR"
     #pandas.DataFrame(inputs).to_csv("CRISPR.inputs.test.csv")
-    #import ipdb; ipdb.set_trace()
+    #import iapdb; iapdb.set_trace()
 
     # call to scikit-learn, returns a vector of predicted values
     preds = model.predict(inputs)
@@ -613,7 +613,7 @@ def write_results(predictions, file_to_predict):
     return data, newfile
 
 if __name__ == '__main__':
-    #save_final_model_V3(filename='azimuth/azure_models/V3_model_full.pickle', include_position=True)
+    #save_final_model_V3(filename='Azimuth_Model/azure_models/V3_model_full.pickle', include_position=True)
 
     save_final_model_V3(filename='saved_models/V3_model_nopos.pickle', include_position=False)
     save_final_model_V3(filename='saved_models/V3_model_full.pickle', include_position=True)
@@ -622,8 +622,8 @@ if __name__ == '__main__':
 
 
     learn_options = {"V": 3,
-                "train_genes": azimuth.load_data.get_V3_genes(),
-                "test_genes": azimuth.load_data.get_V3_genes(),
+                "train_genes": Azimuth_Model.load_data.get_V3_genes(),
+                "test_genes": Azimuth_Model.load_data.get_V3_genes(),
                 "target_name": 'score_drug_gene_rank',
                 "testing_non_binary_target_name": 'ranks',
                 'include_pi_nuc_feat': True,

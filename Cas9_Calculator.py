@@ -3,7 +3,6 @@ import math
 import operator
 from time import time
 from Bio import SeqIO
-#more import xlsxwriter
 PRINT = True
 
 def mers(length):
@@ -101,7 +100,6 @@ class sgRNA(object):
 		num_offsite_targets = 0
 		for gene in self.guide_info:
 			for i,Guide in enumerate(self.guide_info[gene][0]):
-				print("Guide")
 				print(Guide)
 				num_offsite_targets = 0
 
@@ -331,7 +329,7 @@ class clCas9Calculator(object):
 		return dG_supercoiling
 
 if __name__ == "__main__":
-	guideSequence = 'TACGTACACAAGAGCTCTAG'
+	guideSequence = [['TACGTACACAAGAGCTCTAG', "AAAAAA"],[1,2,3],["postive"]]
 
 	Cas9Calculator=clCas9Calculator(['../GenomeCalculations/NC_000913.gbk'])
 	sgRNA1 = sgRNA(guideSequence, Cas9Calculator)
