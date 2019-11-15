@@ -1,0 +1,14 @@
+matplotlib==3.0.3
+scipy==1.2.1
+numpy==1.16.2
+pandas==0.24.2
+Bio==0.1.0
+GPy==1.9.9
+ipython==7.9.0
+azimuth==2.0
+elevation==1.0.6
+hyperopt==0.2.2
+ipdb==0.12.2
+mkl==2019.0
+scikit_learn==0.21.3
+theanets==0.7.3
