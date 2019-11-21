@@ -157,7 +157,7 @@ def main():
     Cas9Calculator=clCas9Calculator('Run_Genome_Plus_RC')
     #if args.purpose == "g":
         #different target guides
-    sgRNA_Created = sgRNA(guide_list, Cas9Calculator, args)
+    sgRNA_Created = sgRNA(guide_list, Cas9Calculator)
     __elasped = (time.time() - __start)
     print("Time Model Building: {:.2f}".format(__elasped))
 

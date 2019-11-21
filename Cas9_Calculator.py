@@ -75,11 +75,10 @@ def identifyTargetSequencesMatchingPAM(PAM_seq, positions_at_mers, full_sequence
 	return target_sequence_list
 
 class sgRNA(object):
-	def __init__(self, guide_info, Cas9Calculator, args):
+	def __init__(self, guide_info, Cas9Calculator):
 
 		self.guide_info= guide_info
 		self.Cas9Calculator = Cas9Calculator
-		self.args = args
 
 		self.partition_function = 1
 		self.targetSequenceEnergetics = {}
