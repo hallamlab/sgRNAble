@@ -83,6 +83,7 @@ def Guide_Selection(Target_Dict, args):
             #Run the model through the Azimuth Model
             predictions = model_comparison.predict(np.array(guides))
             guides = [x for y,x in sorted(zip(predictions,guides), reverse=True)][:args.azimuth_cutoff]
+            guides = [guide[4:24] for guide in guides]
             guide_list[gene].extend([guides, Locations, strand_array])
 
     #only runs the negative strand as CRISPRi works better on negative strands
