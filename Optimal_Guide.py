@@ -83,6 +83,8 @@ def Guide_Selection(Target_Dict, args):
             #Run the model through the Azimuth Model
             predictions = model_comparison.predict(np.array(guides))
             guides = [x for y,x in sorted(zip(predictions,guides), reverse=True)][:args.azimuth_cutoff]
+            Locations =  [x for y,x in sorted(zip(predictions,Locations), reverse=True)][:args.azimuth_cutoff]
+            strand_array =  [x for y,x in sorted(zip(predictions,strand_array), reverse=True)][:args.azimuth_cutoff]
             guides = [guide[4:24] for guide in guides]
             guide_list[gene].extend([guides, Locations, strand_array])
 
@@ -147,6 +149,7 @@ def main():
     Target_Dict, Genome = Get_Sequence(args)
 
     ref_record = SeqRecord(Genome, id="refgenome", name ="reference", description ="a reference background")
+    ref_record = ref_record + ref_record.reverse_complement()
     SeqIO.write(ref_record, "Run_Genome_Plus_RC", "fasta")
 
     #Select the guides based on the purpose and the azimuth model
