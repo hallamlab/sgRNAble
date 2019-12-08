@@ -150,8 +150,6 @@ class sgRNA(object):
 							                         (" "*3 + info['sequence']),
 													 str(round(info['dG_target'],2)),\
 								 				 	 str(percentPartitionFunction) ))
-							print( '\t'.join(  [ str(position), (" "*3 +info['sequence']),\
-						    	str(round(info['dG_target'], 2)), str(percentPartitionFunction) ]))
 
 				end_time = time()
 
