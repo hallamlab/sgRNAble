@@ -105,7 +105,6 @@ class sgRNA(object):
 				self.partition_function = 1
 
 				for (source, targets) in genomeDictionary.items():
-					#print("source ", source)
 					self.targetSequenceEnergetics[source] = {}
 					for fullPAM in self.Cas9Calculator.returnAllPAMs():
 						dG_PAM = self.Cas9Calculator.calc_dG_PAM(fullPAM)
@@ -115,9 +114,7 @@ class sgRNA(object):
 						for (target_sequence, targetPosition) in genomeDictionary[source][fullPAM]:
 							dG_exchange = self.Cas9Calculator.calc_dG_exchange(Guide, target_sequence)
 							#dG_exchange = 0
-
 							dG_target = dG_PAM + dG_supercoiling + dG_exchange
-							print(target_sequence)
 
 							self.targetSequenceEnergetics[source][targetPosition] = {'sequence': target_sequence,
 																					 'dG_PAM': dG_PAM,
@@ -157,7 +154,7 @@ class sgRNA(object):
 				#print()
 				if PRINT:
 					print("\n\n")
-				quit()
+
 class clCas9Calculator(object):
 
 	def __init__(self,filename, quickmode=True, ModelName='InvitroModel.mat'):
