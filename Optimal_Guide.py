@@ -30,8 +30,9 @@ def PAM_Finder(Sequence,args):
 
     #initalize arguements into variables for the user
     PAM = "GG"
-    guide_RNA_length = args.guide_length
+    guide_RNA_length = 20
     Azimuth_Distance = 24 # from the from of the NGG sequence
+    total_azimuth_distance = 30 # the size of guide needed for the azimuth model
     cut_list = args.cut
     if cut_list == None:
         cut_list = []
@@ -42,20 +43,30 @@ def PAM_Finder(Sequence,args):
     Position = 0
     while Position < len(Sequence):
         i = Sequence[Position:].find(PAM)
-        #Finds the location of the next cut argument which might be an issue
-        potential_guide_location = Position + i - guide_RNA_length
-        discard = any(cutsite in Sequence[potential_guide_location: potential_guide_location + guide_RNA_length] for cut_site in cut_list)
         if i < 0:
             break
 
-        if potential_guide_location > (Azimuth_Distance - args.guide_length) and not discard:
-            Locations.append(potential_guide_location - 1)
+        #Finds the location of the next cut argument which might be an issue
+        potential_guide_location = Position + i - guide_RNA_length
+        discard = any(cutsite in Sequence[potential_guide_location: potential_guide_location + guide_RNA_length] for cut_site in cut_list)
+
+        #Check if there are any cutsites
+        if discard:
+            pass
+        #check if the guide is too close to the beginning of the gene.
+        elif potential_guide_location < (Azimuth_Distance - guide_RNA_length) + 1: #Plus one is due to the N in the GG so the entire frame should be shifted down
+            pass
+        #check if the guide is long enough for azimuth analysis
+        elif potential_guide_location + total_azimuth_distance < len(Sequence):
+            Locations.append(potential_guide_location - 1) #the negative 1 accounts for the N in the GG
 
         Position = Position + i + 1
 
     return Locations
 
 def Guide_Selection(Target_Dict, args):
+
+    guide_RNA_length = 20
 
     #Obtain the Guide RNAs from the Target Sequence
     guide_list = {}
@@ -75,8 +86,8 @@ def Guide_Selection(Target_Dict, args):
             negative_array = ["Negative"] * len(NegLocations)
 
             #Combine the information into a single array for each gene
-            guides = [str(Target_Dict[gene][loc-4:loc+args.guide_length+6]) for loc in Locations]
-            guides.extend([str(Seq.reverse_complement(Target_Dict[gene][loc-6-args.guide_length:loc+4])) for loc in NegLocations ])
+            guides = [str(Target_Dict[gene][loc-4:loc+guide_RNA_length+6]) for loc in Locations] #Magic numbers increase the sequence by 6 bps after NGG and 4 to raise total to 30
+            guides.extend([str(Seq.reverse_complement(Target_Dict[gene][loc-6-guide_RNA_length:loc+4])) for loc in NegLocations ]) #Magic numbers perform same as above, but in the opposite direction due to negative strand
             Locations.extend(NegLocations)
             strand_array.extend(negative_array)
 
@@ -135,8 +146,6 @@ def main():
                         help= "The Genome of the organism, if targeting a plasmid, make sure to \n include it as well (Fasta or Genebank)")
     parser.add_argument("-a", "--azimuth_cutoff", required=False, default = 10,
                         help= "How many guides should pass from azimuth screening, the guides are passed based on descending azimuth prediction score")
-    parser.add_argument("-l", "--guide_length", required = False, default = 20,
-                        help = "Length of the guide RNA sequence")
     parser.add_argument("-p", "--purpose", required=False, default = "d",
                         help= " i: CRISPR interference on gene \n ###a: CRISPR activation on gene, enter the number of base pair from start you would want \n s: CRISPRi screening from contigs (genes found via prodigal) \n g: guide binding strength calculator \n Leave blank to see all possible guides and off target effects from your sequence")
     parser.add_argument("-c", "--cut", required=False, nargs = "+",
