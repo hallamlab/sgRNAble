@@ -13,16 +13,16 @@ from Azimuth_Model import model_comparison
 def Get_Sequence(args):
 
     #Reads the file using biopython and creates a object called target
-    Target_Dict = SeqIO.to_dict(SeqIO.parse(args.target_sequence, args.target_sequence[-6:].split('.')[1])) # the -76is sufficient to get either a fasta or gbk suffix and if a user uses periods in filenames shouldn't be an issue
-
+    Target_Dict = SeqIO.to_dict(SeqIO.parse(args.target_sequence, args.target_sequence.split('.')[-1]))
     for name in Target_Dict:
         Target_Dict[name] = Target_Dict[name].seq.upper()
 
     #Reads the Genome files using biopython and combines them into one genome object
-    Genome = SeqIO.read(args.genome_sequence[0], args.genome_sequence[0][-6:].split('.')[1])
-    for i in range(1,len(args.genome_sequence)):
-        Genome  = Genome + SeqIO.read(args.genome_sequence[i], args.genome_sequence[i][-6:].split('.')[1])
-
+    Genome = SeqRecord(Seq(""))
+    for i in range(len(args.genome_sequence)):
+        genome_parts = SeqIO.parse(args.genome_sequence[i], args.genome_sequence[i].split('.')[-1])
+        for part in genome_parts:
+            Genome.seq = Genome.seq + part.seq
     return Target_Dict, Genome.seq.upper()
 
 #Find the Guide RNAs in a Sequence
