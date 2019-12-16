@@ -1,156 +1,183 @@
-import numpy
+import numpy as np
 from Bio.Alphabet import generic_dna
+from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio.Seq import Seq
-from tkinter import *
-from tkinter.filedialog import askopenfilename
-from tkinter import messagebox
+import argparse
 from Cas9_Calculator import *
+from argparse import RawTextHelpFormatter
+import time
+from Azimuth_Model import model_comparison
 
+# Returns the upper case sequences as strings from the files given as arguments. Also combines the various genome sequences
+def Get_Sequence(args):
 
-def Get_Files (Title, Repeat):
+    #Reads the file using biopython and creates a object called target
+    Target_Dict = SeqIO.to_dict(SeqIO.parse(args.target_sequence, args.target_sequence.split('.')[-1]))
+    for name in Target_Dict:
+        Target_Dict[name] = Target_Dict[name].seq.upper()
 
-    root = Tk()
-    Message = "Please select the " + Title + " file"
-    More_Seqs = True
-
-    # Add a grid
-    mainframe = Frame(root)
-    mainframe.grid(column=0,row=0, sticky=(N,W,E,S) )
-    mainframe.columnconfigure(0, weight = 1)
-    mainframe.rowconfigure(0, weight = 1)
-    mainframe.pack(pady = 100, padx = 100)
-
-    if(Repeat):
-        Message = "Please select an " + Title + " file"
-        More_Seqs = messagebox.askyesno( Title,"Would you like to add Additional Sequences to the genome \n (Such as Plasmids)")
-        if not(More_Seqs):
-            return 1
-
-    messagebox.showinfo(Title, "Please select the file type")
-
-    # Create a Tkinter variable
-    tkvar = StringVar(root)
-
-    # Dictionary with options
-    Options = [ "Fasta", "Genbank",]
-    tkvar.set('Fasta') # set the default option
-
-    popupMenu = OptionMenu(mainframe, tkvar, *Options)
-    Type = "Choose the file type of the " + Title
-    Label(mainframe, text= Type).grid(row = 1, column = 1)
-    popupMenu.grid(row = 2, column =1)
-
-    def ok():
-        root.quit()
-        root.withdraw()
-
-    Button2 = Button(root, text="OK", command=ok)
-    Button2.pack()
-
-    root.mainloop()
-
-    Filetype = tkvar.get()
-    Filetype = Filetype.lower()
-
-    messagebox.showinfo(Title, Message)
-    Filename  = askopenfilename()
-
-    File_Info = [ Filename, Filetype ]
-
-    root.withdraw()
-    return File_Info
-
-def Get_Sequence():
-    Target_Seq_File = Get_Files("Target Sequence", False)
-    Genome_Seq_File = Get_Files("Genome Sequence", False)
-
-    Target = SeqIO.read(Target_Seq_File[0], Target_Seq_File[1] )
-    Genome = SeqIO.read(Genome_Seq_File[0], Genome_Seq_File[1] )
-
-    Additional_Seq_File = Get_Files("Additional Sequence", True)
-    if not(Additional_Seq_File == 1):
-        Genome = Genome + SeqIO.read(Additional_Seq_File[0], Additional_Seq_File[1] )
-
-    while not (Additional_Seq_File == 1 ):
-         Additional_Seq_File = Get_Files("Additional Sequence", True)
-         if not(Additional_Seq_File == 1):
-            Genome = Genome + SeqIO.read(Additional_Seq_File[0], Additional_Seq_File[1] )
-
-    return Target.seq.upper(), Genome.upper()
-
-#Length of the Guide RNA desired
-Guide_RNA_length = 20
+    #Reads the Genome files using biopython and combines them into one genome object
+    Genome = SeqRecord(Seq(""))
+    for i in range(len(args.genome_sequence)):
+        genome_parts = SeqIO.parse(args.genome_sequence[i], args.genome_sequence[i].split('.')[-1])
+        for part in genome_parts:
+            Genome.seq = Genome.seq + part.seq
+    return Target_Dict, Genome.seq.upper()
 
 #Find the Guide RNAs in a Sequence
-def PAM_Finder(Sequence, PAM, Direction):
-  Guide_RNAs = []
+def PAM_Finder(Sequence,args):
 
-  Position = 0
-  Temp_Sequence = Sequence
-  j = 0 #Variable for limiting time spent searching Genome
-  while True:
-    i = Temp_Sequence.find(PAM)
-    if(i == -1):
-        break
-    if(j > 10000):
-        break
-    Position = Position + i + 2
-    if(Position > Guide_RNA_length):
-        if(Direction > 0):
-            Guide_RNAs.append(Sequence[Position-23:Position-3])
-        if(Direction < 0):
-            Guide_RNAs.append(Sequence[Position+1:Position+21])
-    Temp_Sequence = Temp_Sequence[i+2:]
-    j = j+1
+    #initalize arguements into variables for the user
+    PAM = "GG"
+    guide_RNA_length = 20
+    Azimuth_Distance = 24 # from the from of the NGG sequence
+    total_azimuth_distance = 30 # the size of guide needed for the azimuth model
+    cut_list = args.cut
+    if cut_list == None:
+        cut_list = []
 
-  return Guide_RNAs
+    Locations = []
 
-#Combine the Coding and Template Strands into a single strand
-def CombinetoStr (Template_Guides, Coding_Guides):
-  Guides = []
+    Sequence = str(Sequence)
+    Position = 0
+    while Position < len(Sequence):
+        i = Sequence[Position:].find(PAM)
+        if i < 0:
+            break
 
-  for i in range (len(Template_Guides)):
-    if (i < len(Template_Guides)):
-      Guides.append(str(Template_Guides[i]))
+        #Finds the location of the next cut argument which might be an issue
+        potential_guide_location = Position + i - guide_RNA_length
+        discard = any(cutsite in Sequence[potential_guide_location: potential_guide_location + guide_RNA_length] for cut_site in cut_list)
 
-  for i in range (len(Coding_Guides)):
-    if (i < len(Coding_Guides)):
-      Guides.append(ReverseComplement(str(Coding_Guides[i])))
+        #Check if there are any cutsites
+        if discard:
+            pass
+        #check if the guide is too close to the beginning of the gene.
+        elif potential_guide_location < (Azimuth_Distance - guide_RNA_length) + 1: #Plus one is due to the N in the GG so the entire frame should be shifted down
+            pass
+        #check if the guide is long enough for azimuth analysis
+        elif potential_guide_location + total_azimuth_distance < len(Sequence):
+            Locations.append(potential_guide_location - 1) #the negative 1 accounts for the N in the GG
 
-  return Guides
+        Position = Position + i + 1
 
-def ReverseComplement(nucleotide_sequence):
-  comp = []
-  for c in nucleotide_sequence:
-    if c == 'A' or c == 'a':
-      comp.append('T')
-    if c == 'G' or c == 'g':
-      comp.append('C')
-    if c == 'U' or c == 'u' or c == 'T' or c == 't':
-      comp.append('A')
-    if c == 'C' or c == 'c':
-      comp.append('G')
-  rev_comp = ''.join(reversed(comp))
-  return rev_comp
+    return Locations
 
-Target_Seq, Genome = Get_Sequence()
+def Guide_Selection(Target_Dict, args):
 
-Genome = Genome + Genome.reverse_complement()
-SeqIO.write(Genome, "Total_Genome_Plus_RC", "fasta")
+    guide_RNA_length = 20
 
-messagebox.showinfo("Searching", "Please Wait")
-#Obtain the Guide RNAs from the Target Sequence
-T_Guides_GG = PAM_Finder(Target_Seq, "GG",1)
-T_Guides_CC = PAM_Finder(Target_Seq, "CC", -1)
+    #Obtain the Guide RNAs from the Target Sequence
+    guide_list = {}
 
-Target_Guides = CombinetoStr(T_Guides_GG, T_Guides_CC)
+    #Default purpose, the tool looks for all avalible guides possibly found in the sequence given by the user
+    if args.purpose == "d":
+        for gene in Target_Dict:
+            #Get guides on the positive strand
+            guide_list[gene] = []
+            Locations = PAM_Finder(Target_Dict[gene], args)
+            strand_array = ["Positive"] * len(Locations)
 
+            #Get guides on the negative strand
+            NegLocations = PAM_Finder(Seq.reverse_complement(Target_Dict[gene]), args)
+            Sequence_length = len(Target_Dict[gene])
+            NegLocations = [Sequence_length - x for x in NegLocations]
+            negative_array = ["Negative"] * len(NegLocations)
 
-for Guide in Target_Guides:
+            #Combine the information into a single array for each gene
+            guides = [str(Target_Dict[gene][loc-4:loc+guide_RNA_length+6]) for loc in Locations] #Magic numbers increase the sequence by 6 bps after NGG and 4 to raise total to 30
+            guides.extend([str(Seq.reverse_complement(Target_Dict[gene][loc-6-guide_RNA_length:loc+4])) for loc in NegLocations ]) #Magic numbers perform same as above, but in the opposite direction due to negative strand
+            Locations.extend(NegLocations)
+            strand_array.extend(negative_array)
 
-        print(Guide)
-        Cas9Calculator=clCas9Calculator(['Total_Genome_Plus_RC'])
-        sgRNA1 = sgRNA(Guide, Cas9Calculator)
-        sgRNA1.run()
-        sgRNA1.printTopTargets()
+            #Run the model through the Azimuth Model
+            predictions = model_comparison.predict(np.array(guides))
+            guides = [x for y,x in sorted(zip(predictions,guides), reverse=True)][:args.azimuth_cutoff]
+            Locations =  [x for y,x in sorted(zip(predictions,Locations), reverse=True)][:args.azimuth_cutoff]
+            strand_array =  [x for y,x in sorted(zip(predictions,strand_array), reverse=True)][:args.azimuth_cutoff]
+            guides = [guide[4:24] for guide in guides]
+            guide_list[gene].extend([guides, Locations, strand_array])
+
+    #only runs the negative strand as CRISPRi works better on negative strands
+    elif args.purpose == "i":
+        for gene in Target_Dict:
+            Locations = PAM_Finder(Seq.reverse_complement(Target_Dict[gene]), args)
+            Sequence_length = len(Target_Dict[gene])
+            NegLocations = [Sequence_length - x for x in Locations]
+            guide_list[gene].append(NegLocations)
+    elif args.purpose == "s":
+        #Run through Prodigal
+
+        #am only running the negative side as prodigal gives you the positive side of the gene and looks for the gene on both strands (I'm sure of this, but I should verify it)
+        for gene in Target_Dict:
+            Locations = PAM_Finder(Seq.reverse_complement(Target_Dict[gene]), args)
+            Sequence_length = len(Target_Dict[gene])
+            NegLocations = [Sequence_length - x for x in Locations]
+            guide_list[gene].append(NegLocations)
+    elif args.purpose == "g":
+        pass
+    else:
+        #cull all guides which have a location larger than the user given cutoff as this is the activation case
+        for gene in Target_Dict:
+            guide_list[gene] = []
+            PosLocations = PAM_Finder(Target_Dict[gene], args)
+            PosLocations = [x for x in PosLocations if x < int(args.purpose[:-1])]
+            guide_list[gene].append(PosLocations)
+
+            Locations = PAM_Finder(Seq.reverse_complement(Target_Dict[gene]), args)
+            Sequence_length = len(Target_Dict[gene])
+            NegLocations = [Sequence_length - x for x in Locations]
+            NegLocations = [x for x in NegLocations if x < int(args.purpose[:-1]) ]
+            guide_list[gene].append(NegLocations)
+
+    return guide_list
+
+def main():
+
+    #Parser to get the files listed in the arguments
+    parser = argparse.ArgumentParser(description="""This program helps you to find all possible guide RNAs that will \ntarget the gene. Then using the model created by Salis Lab, \nyou can see the off target effects for the each possible guide.""",
+                                     formatter_class=RawTextHelpFormatter)
+
+    #Parsers to add arguements.
+    parser.add_argument("-t", "--target_sequence", required=True,
+                        help= "The Gene Sequence of Interest (Fasta or Genebank)")
+    parser.add_argument("-g", "--genome_sequence", required=True, nargs = '+',
+                        help= "The Genome of the organism, if targeting a plasmid, make sure to \n include it as well (Fasta or Genebank)")
+    parser.add_argument("-a", "--azimuth_cutoff", required=False, default = 10,
+                        help= "How many guides should pass from azimuth screening, the guides are passed based on descending azimuth prediction score")
+    parser.add_argument("-p", "--purpose", required=False, default = "d",
+                        help= " i: CRISPR interference on gene \n ###a: CRISPR activation on gene, enter the number of base pair from start you would want \n s: CRISPRi screening from contigs (genes found via prodigal) \n g: guide binding strength calculator \n Leave blank to see all possible guides and off target effects from your sequence")
+    parser.add_argument("-c", "--cut", required=False, nargs = "+",
+                        help= "Sequences to avoid in guides (i.e restriction enzyme sites)")
+
+    #Creating a variable to make the values easily accessible
+    args = parser.parse_args()
+
+    #Get the sequences in a Seq format from user fasta or genebank files
+    Target_Dict, Genome = Get_Sequence(args)
+
+    ref_record = SeqRecord(Genome, id="refgenome", name ="reference", description ="a reference background")
+    ref_record = ref_record + ref_record.reverse_complement()
+    SeqIO.write(ref_record, "Run_Genome_Plus_RC", "fasta")
+
+    #Select the guides based on the purpose and the azimuth model
+    guide_list = Guide_Selection(Target_Dict, args)
+
+    #Build the model
+    __start = time.time()
+    Cas9Calculator=clCas9Calculator('Run_Genome_Plus_RC')
+    #if args.purpose == "g":
+        #different target guides
+    sgRNA_Created = sgRNA(guide_list, Cas9Calculator)
+    __elasped = (time.time() - __start)
+    print("Time Model Building: {:.2f}".format(__elasped))
+
+    #Run the model
+    __start = time.time()
+    sgRNA_Created.run()
+    __elasped = (time.time() - __start)
+    print("Time model calculation: {:.2f}".format(__elasped))
+
+if __name__ == "__main__":
+    main()
