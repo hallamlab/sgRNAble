@@ -28,75 +28,11 @@ def identifyNucleotidePositionsOfMers(full_sequence, length=10):
 	"""Saves list of nucleotide positions in genome that all match a unique N-mer
 	sequence. Counting begins at __ending_ of MER.
 
-def identifyTargetSequencesMatchingPAM(PAM_seq, positions_at_mers, full_sequence,
-                                        target_sequence_length=20):
-    """ Generates a list of target nucleotide sequences and corresponding nt
-    positions for an inputted sequence that matched the PAM_seq.
-        Uses the positionsAtMers dictionary to accelerate the identification.
-        Good for large genomes.
-
-    Usage:  listOfTargets = identifyTargetSequencesMatchingPAM('CGG',
-                                positionsAtMers, genome_sequence)
-    """
-    target_sequence_list = []
-    all_mers = list(positions_at_mers.keys())
-    mer_length = len(all_mers[0])
-    list_of_mers_with_PAM = [mer + PAM_seq for mer in mers(mer_length - len(PAM_seq))]
-    for mer_with_PAM in list_of_mers_with_PAM:
-        nt_list = positions_at_mers[mer_with_PAM]
-        for nt in nt_list:
-            begin = nt-target_sequence_length - len(PAM_seq)
-            end = nt - len(PAM_seq)
-            if begin > 0 and end < len(full_sequence): #Does not account for circular DNAs
-                target_sequence = full_sequence[begin : end]
-                target_sequence_list.append((target_sequence, nt))
-    return target_sequence_list
-
-class sgRNA(object):
-
-    def __init__(self, guideSequence, Cas9Calculator):
-
-        self.guideSequence = guideSequence
-        self.Cas9Calculator = Cas9Calculator
-
-        self.partition_function = 1
-        self.targetSequenceEnergetics = {}
-
-        self.debug = False
-
-    def run(self):
-
-        begin_time = time()
-
-        targetDictionary = self.Cas9Calculator.targetDictionary
-        for (source,targets) in list(targetDictionary.items()):
-            self.targetSequenceEnergetics[source] = {}
-            for fullPAM in self.Cas9Calculator.returnAllPAMs():
-                dG_PAM = self.Cas9Calculator.calc_dG_PAM(fullPAM)
-                dG_supercoiling = self.Cas9Calculator.calc_dG_supercoiling(sigmaInitial = -0.05, targetSequence = 20 * "N")  #only cares about length of sequence
-                for (targetSequence,targetPosition) in targetDictionary[source][fullPAM]:
-                    dG_exchange = self.Cas9Calculator.calc_dG_exchange(self.guideSequence,targetSequence)
-                    dG_target = dG_PAM + dG_supercoiling + dG_exchange
-                    self.targetSequenceEnergetics[source][targetPosition] = {'sequence' : targetSequence, 'dG_PAM' : dG_PAM, 'full_PAM' : fullPAM, 'dG_exchange' : dG_exchange, 'dG_supercoiling' : dG_supercoiling, 'dG_target' : dG_target}
-                    self.partition_function += math.exp(-dG_target / self.Cas9Calculator.RT)
-
-                    if self.debug:
-                        print("targetSequence : ", targetSequence)
-                        print("fullPAM: " , fullPAM)
-                        print("dG_PAM: ", dG_PAM)
-                        print("dG_supercoiling: ", dG_supercoiling)
-                        print("dG_exchange: ", dG_exchange)
-                        print("dG_target: ", dG_target)
-                        print("Partition function (so far): ", self.partition_function)
-
-        end_time = time()
-
-        print("Elapsed Time: ", end_time - begin_time)
-
-    def printTopTargets(self, numTargetsReturned = 10):
-
-        for (source, targets) in list(self.targetSequenceEnergetics.items()):
-            print("SOURCE: %s" % source)
+	Usage:   genomePositionsAtMers[mer_sequence] is a list of nucleotide positions
+	within the inputted fullSequence that match mer_sequence
+			 If mer_sequence ends in a PAM site, then this can be used to match
+			 the first N-3 nt of a guide strand plus a PAM site sequence.
+	"""
 
 	#Create a list of all possible N-mers
 	all_possible_mers = mers(length)
