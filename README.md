@@ -46,7 +46,7 @@ To run the script, ensure you have the following libraries installed:
 navigate to the folder in terminal and type in
 
 ```
-python optimal_guide_calc/optimal_guide.py -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
+python optimal_guide_finder/guide_finder.py -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
 ```
 
 Follow the prompts on screen.

@@ -8,6 +8,7 @@ TODO:
 import math
 from time import time
 from cas_calculator import CasCalculator
+import numpy as np
 
 class sgRNA():
 
@@ -24,6 +25,7 @@ class sgRNA():
     def run(self):
         genome_dictionary = self._cas_calculator.genome_dictionary
         num_offsite_targets = 0
+        nt_pos={'A':0,'T':1,'C':2,'G':3}
 
         for (source, targets) in genome_dictionary.items():
             for full_pam in self._cas_calculator.get_all_pams():
@@ -34,6 +36,7 @@ class sgRNA():
         for gene in self.guide_info:
             for i, guide in enumerate(self.guide_info[gene][0]):
                 print(guide)
+                num_guide = np.array([nt_pos[nt] for nt in list(guide)])
 
                 begin_time = time()
 
@@ -48,7 +51,7 @@ class sgRNA():
                         dg_supercoiling = self._cas_calculator.calc_dG_supercoiling(
                             sigmaInitial=-0.05, targetSequence=20 * "N")  # only cares about length of sequence
                         for (target_sequence, target_position) in genome_dictionary[source][full_pam]:
-                            dg_exchange = self._cas_calculator.calc_dG_exchange(guide, target_sequence)
+                            dg_exchange = self._cas_calculator.calc_dG_exchange(num_guide, target_sequence)
                             #dG_exchange = 0
                             dg_target = dg_pam + dg_supercoiling + dg_exchange
 

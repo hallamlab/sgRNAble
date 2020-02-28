@@ -1,8 +1,11 @@
 """
 TODO: This class could really use some refactoring
 """
+
+import numpy as np
 import scipy.io
 from Bio import SeqIO
+from numba import jit
 
 class CasCalculator():
 
@@ -22,6 +25,7 @@ class CasCalculator():
 
         data = scipy.io.loadmat(self._model_name)
         self._weights = data['w1']
+        self._new_weights = np.array([weight[0]*2.3 for weight in self._weights])
         self._decNN = data['decNN']
 
         self._init_genome_finder(filename)
@@ -84,7 +88,7 @@ class CasCalculator():
         else:
             solverfunc = self._calc_exchange_energy
 
-        dG_exchange = solverfunc(guideSequence, targetSequence)
+        dG_exchange = solverfunc(self._new_weights, guideSequence, targetSequence)
 
         return dG_exchange
 
@@ -164,22 +168,16 @@ class CasCalculator():
             dG += w1*dG1+w2*dG2
         return float(dG)
 
-    def _quick_calc_exchange_energy(self, crRNA, target_seq):
-        nt_pos = {'A': 0, 'T': 1, 'C': 2, 'G': 3,
-                  'a': 0, 't': 1, 'c': 2, 'g': 3}
+    @staticmethod
+    @jit(nopython=True)
+    def _quick_calc_exchange_energy(weights, crRNA, target_seq):
         dG = 0
-        self.nt_mismatch_in_first8 = 0
-        for i in range(0, len(crRNA)):
-            pos = 20-i
-            w1 = self._weights[pos]
-            if nt_pos[crRNA[i]] == nt_pos[target_seq[i]]:
-                dG1 = 0
+        for i in range(len(crRNA)):
+            pos = 20 - i
+            if crRNA[i] == target_seq[i]:
+                continue
             else:
-                # using a bioinformatics search approach to find sequences with up to x mismatches
-                dG1 = 2.3  # kcal/mol
-                if pos <= 8:
-                    self.nt_mismatch_in_first8 = self.nt_mismatch_in_first8+1
-            dG += w1*dG1
+                dG += weights[pos]
         return float(dG)
 
     def _mers(self, length):

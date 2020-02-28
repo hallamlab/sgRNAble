@@ -134,3 +134,6 @@ dmypy.json
 
 # Mac cache files
 .DS_Store
+
+# Output files
+.output/
