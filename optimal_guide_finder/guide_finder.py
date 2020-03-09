@@ -11,7 +11,9 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import guide_generator
-from cas_model import sgRNA
+import guide_strength_calculator
+
+FASTA_FILE = "output/Run_Genome_Plus_RC"
 
 def init_parser():
     """
@@ -64,6 +66,7 @@ def get_sequence(args):
             args.genome_sequence[i], args.genome_sequence[i].split('.')[-1])
         for part in genome_parts:
             genome.seq = genome.seq + part.seq
+
     return target_dict, genome.seq.upper()
 
 def main():
@@ -80,24 +83,21 @@ def main():
 
     ref_record = SeqRecord(genome, id="refgenome", name="reference", description="a reference background")
     ref_record = ref_record + ref_record.reverse_complement()
-    SeqIO.write(ref_record, "Run_Genome_Plus_RC", "fasta")
+    SeqIO.write(ref_record, FASTA_FILE, "fasta")
 
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
 
     # Build the model
     __start = time.time()
-    # if args.purpose == "g":
-    # different target guides
-    sg_rna_created = sgRNA(guide_list, "Run_Genome_Plus_RC")
-    __elasped = (time.time() - __start)
-    print("Time Model Building: {:.2f}".format(__elasped))
 
-    # Run the model
-    __start = time.time()
-    sg_rna_created.run()
+    model = guide_strength_calculator.initalize_model(guide_list, FASTA_FILE)
+
     __elasped = (time.time() - __start)
-    print("Time model calculation: {:.2f}".format(__elasped))
+    print("Time Model Building + calculation: {:.2f}".format(__elasped))
+
+    # select guides based on output
+    # guide_strength_calculator.select_guides(model)
 
 
 if __name__ == "__main__":
