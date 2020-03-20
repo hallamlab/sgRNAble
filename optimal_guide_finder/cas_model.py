@@ -4,11 +4,11 @@ Module responsible for calculating the per guide binding
 import numpy as np
 import scipy.io
 from Bio import SeqIO
-from numba import jit, float64
+from numba import types
+from numba import jit, float64, int32
 
 class CasModel():
 
-    # TODO: Meaning?
     RT = 0.61597
 
     # the PAMs with the highest dG, ignoring other PAM sequences by setting their dG to 0
@@ -69,9 +69,6 @@ class CasModel():
         print('number of negative energies: ', negative_val)
 
     def get_all_pams(self):
-        """
-        TODO: documentation
-        """
         # PAM part will be 'GGT'
         for (pam_part, _) in sorted(list(self._PAM_ENERGY.items()), key=lambda x: x[1]):
             for nt in ('A', 'G', 'C', 'T'):  # nt + PAMpart will be all possible 'NGGT'
@@ -90,16 +87,6 @@ class CasModel():
             return 0.0
 
     def calc_dg_exchange(self, guide_seq, target_seq):
-        """
-        Calculate the delta G value for a guide sequence against the target
-
-        Arguments:
-            guideSequence {} -- TODO
-            targetSequence {} -- TODO
-
-        Returns:
-            [float] -- delta G value
-        """
         self._nt_mismatch_in_first8_list = []
 
         if self._quick_mode:
@@ -113,9 +100,6 @@ class CasModel():
         return dg_exchange
 
     def calc_dg_supercoiling(self, sigma_initial, target_seq):
-        """
-        TODO: Documentation and magic numbers (10 and -0.08)
-        """
         sigma_final = -0.08
         dg_supercoiling = 10.0 * \
             len(target_seq) * self.RT * (sigma_final**2 - sigma_initial**2)
@@ -147,13 +131,12 @@ class CasModel():
         self.genome_dictionary = genome_dictionary
 
     @staticmethod
-    # @jit(float64(float64[:], float64[:], float64[:]), nopython=True)
+    @jit(float64(float64[:], int32[:], types.unicode_type), nopython=True)
     def _quick_calc_exchange_energy(weights, cr_rna, target_seq):
         """
         calculate the delta G value a potential guide against the target sequence
         this method is made static to allow compilation with numba for speed-up
 
-        TODO:
         Arguments:
             weights {np-arr} -- [description]
             cr_rna {np-arr} -- [description]
