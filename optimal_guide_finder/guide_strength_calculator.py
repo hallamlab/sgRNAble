@@ -32,9 +32,8 @@ def initalize_model(guide_info, filename):
 
     # pull results from the queue
     frames = []
-    for gene in guide_info:
-        for i, guide in enumerate(guide_info[gene][0]):
-            frames.append(pd.DataFrame.from_records(q.get()))
+    for _ in threads:
+        frames.append(pd.DataFrame.from_records(q.get()))
 
     df = pd.concat(frames)
 
