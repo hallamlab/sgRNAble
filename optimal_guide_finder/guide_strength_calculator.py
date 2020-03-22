@@ -35,9 +35,11 @@ def initalize_model(guide_info, filename):
     for _ in threads:
         frames.append(pd.DataFrame.from_records(q.get()))
 
-    df = pd.concat(frames)
+    #Would it be possible to pass information about the guide such as it's location in the target_seq
+    #and the strand it targets to this function. That way we can apped it to each guide in this dataframe
+    #df = pd.DataFrame(frames)
 
-    # df.to_csv('test.csv', index=False)
+    df.to_csv('test.csv', index=False)
 
     return model, df
 
@@ -62,15 +64,26 @@ def process_guide(model, guide, guide_index, queue):
                 dg_exchange = model.calc_dg_exchange(num_guide, target_sequence)
                 dg_target = dg_pam + dg_supercoiling + dg_exchange
 
-                result.append([source, target_position, target_sequence, dg_pam, full_pam,
-                               dg_exchange, dg_supercoiling, dg_target])
+                result.append([math.exp(-dg_target / model.RT])
                 partition_function += math.exp(-dg_target / model.RT)
-
+    
+    results.insert(0,[guide,partition_function]
+    guide_series = process_off_target_guides(results)    
     print('\t' + "No." + str(guide_index + 1))
     print('\t' + guide)
 
-    queue.put(result)
+    queue.put(guide_series)
     return
 
-def select_guides(model, guide_data, verbose=False):
-    return []
+def process_off_target_guides(guide_data, verbose=False):
+    guide_seq = guide_info[0][0]
+    partition_function = guide_info[0][1]
+    guide_entropy = 0
+    for off_target in guide_info[1:]:
+        probability = off_target[0]/partition_function
+        guide_entropy -= probability*np.log2(probability)
+    guide_series = pd.Series([guide_seq,
+                              guide_entropy],
+                             index = ["Guide Sequence",
+                                      "Guide Entropy"])
+    return guide_series
