@@ -31,9 +31,9 @@ def initalize_model(guide_info, filename):
             threads.append(process)
 
     # pull results from the queue
-    frames = []
+    df = pd.DataFrame(index = ["Guide Sequence", "Entropy Score"])
     for _ in threads:
-        frames.append(pd.DataFrame.from_records(q.get()))
+        df.append(q.get())
 
     #Would it be possible to pass information about the guide such as it's location in the target_seq
     #and the strand it targets to this function. That way we can apped it to each guide in this dataframe
@@ -64,10 +64,10 @@ def process_guide(model, guide, guide_index, queue):
                 dg_exchange = model.calc_dg_exchange(num_guide, target_sequence)
                 dg_target = dg_pam + dg_supercoiling + dg_exchange
 
-                result.append([math.exp(-dg_target / model.RT])
+                result.append([math.exp(-dg_target / model.RT)])
                 partition_function += math.exp(-dg_target / model.RT)
     
-    results.insert(0,[guide,partition_function]
+    results.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(results)    
     print('\t' + "No." + str(guide_index + 1))
     print('\t' + guide)
@@ -85,5 +85,5 @@ def process_off_target_guides(guide_data, verbose=False):
     guide_series = pd.Series([guide_seq,
                               guide_entropy],
                              index = ["Guide Sequence",
-                                      "Guide Entropy"])
+                                      "Entropy Score"])
     return guide_series
