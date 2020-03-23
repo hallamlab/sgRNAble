@@ -147,7 +147,7 @@ class CasModel():
             [folat] -- delta G value
         """
         dg = 0
-        for i, _ in enumerate(cr_rna):
+        for i in range(len(cr_rna)): 
             pos = 20 - i # TODO: magic number
             if cr_rna[i] == target_seq[i]:
                 continue

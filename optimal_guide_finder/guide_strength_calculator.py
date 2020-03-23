@@ -58,7 +58,7 @@ def process_guide(model, guide, guide_index, queue):
             dg_supercoiling = model.calc_dg_supercoiling(sigma_initial=-0.05, target_seq=20 * "N")
 
             for (target_sequence, target_position) in model.genome_dictionary[source][full_pam]:
-                np_target_sequence = np.array([NT_POS[nt] for nt in list(guide)])
+                np_target_sequence = np.array([NT_POS[nt] for nt in list(target_sequence)])
                 dg_exchange = model.calc_dg_exchange(num_guide, np_target_sequence)
                 dg_target = dg_pam + dg_supercoiling + dg_exchange
 
@@ -67,7 +67,6 @@ def process_guide(model, guide, guide_index, queue):
     
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)    
-    print(guide_series)
     print('\t' + "No." + str(guide_index + 1))
     print('\t' + guide)
 
