@@ -19,7 +19,7 @@ class CasModel():
         'TAT': -7.2, 'TAG': -7.2, 'GAA': -7.2, 'GAT': -7.3, 'GAC': -7.2, 'GAG': -7.3
     }
 
-    def __init__(self, filename, quick_mode=True, model_name='data/InvitroModel.mat'):
+    def __init__(self, filename, quick_mode=True, model_name='../data/InvitroModel.mat'):
         """
         Initialize a CasCalculator object
 
@@ -131,7 +131,8 @@ class CasModel():
         self.genome_dictionary = genome_dictionary
 
     @staticmethod
-    @jit(float64(float64[:], int32[:], types.unicode_type), nopython=True)
+    #@jit('float64(float64[:], int32[:], int32[:])', nopython=True)
+    @jit(nopython=True)
     def _quick_calc_exchange_energy(weights, cr_rna, target_seq):
         """
         calculate the delta G value a potential guide against the target sequence

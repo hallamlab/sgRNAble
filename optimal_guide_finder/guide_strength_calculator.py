@@ -33,7 +33,7 @@ def initalize_model(guide_info, filename):
     # pull results from the queue
     df = pd.DataFrame(index = ["Guide Sequence", "Entropy Score"])
     for _ in threads:
-        df.append(q.get())
+        df.append(q.get(), ignore_index=True)
 
     #Would it be possible to pass information about the guide such as it's location in the target_seq
     #and the strand it targets to this function. That way we can apped it to each guide in this dataframe
@@ -49,26 +49,24 @@ def process_guide(model, guide, guide_index, queue):
     num_guide = np.array([NT_POS[nt] for nt in list(guide)])
     partition_function = 1
 
-    res = {}
-
     result = []
 
     for (source, _) in model.genome_dictionary.items():
-        res[source] = {}
 
         for full_pam in model.get_all_pams():
             dg_pam = model.calc_dg_pam(full_pam)
             dg_supercoiling = model.calc_dg_supercoiling(sigma_initial=-0.05, target_seq=20 * "N")
 
             for (target_sequence, target_position) in model.genome_dictionary[source][full_pam]:
-                dg_exchange = model.calc_dg_exchange(num_guide, target_sequence)
+                np_target_sequence = np.array([NT_POS[nt] for nt in list(guide)])
+                dg_exchange = model.calc_dg_exchange(num_guide, np_target_sequence)
                 dg_target = dg_pam + dg_supercoiling + dg_exchange
 
                 result.append([math.exp(-dg_target / model.RT)])
                 partition_function += math.exp(-dg_target / model.RT)
     
-    results.insert(0,[guide,partition_function])
-    guide_series = process_off_target_guides(results)    
+    result.insert(0,[guide,partition_function])
+    guide_series = process_off_target_guides(result)    
     print('\t' + "No." + str(guide_index + 1))
     print('\t' + guide)
 
@@ -76,10 +74,10 @@ def process_guide(model, guide, guide_index, queue):
     return
 
 def process_off_target_guides(guide_data, verbose=False):
-    guide_seq = guide_info[0][0]
-    partition_function = guide_info[0][1]
+    guide_seq = guide_data[0][0]
+    partition_function = guide_data[0][1]
     guide_entropy = 0
-    for off_target in guide_info[1:]:
+    for off_target in guide_data[1:]:
         probability = off_target[0]/partition_function
         guide_entropy -= probability*np.log2(probability)
     guide_series = pd.Series([guide_seq,

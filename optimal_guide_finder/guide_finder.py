@@ -13,7 +13,7 @@ from Bio.SeqRecord import SeqRecord
 import guide_generator
 import guide_strength_calculator
 
-FASTA_FILE = "output/Run_Genome_Plus_RC"
+FASTA_FILE = "../output/Run_Genome_Plus_RC"
 
 def init_parser():
     """
