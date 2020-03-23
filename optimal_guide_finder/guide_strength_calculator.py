@@ -67,6 +67,7 @@ def process_guide(model, guide, guide_index, queue):
     
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)    
+    print(guide_series)
     print('\t' + "No." + str(guide_index + 1))
     print('\t' + guide)
 
