@@ -33,11 +33,7 @@ def initalize_model(guide_info, filename):
     # pull results from the queue
     df = pd.DataFrame(index = ["Guide Sequence", "Entropy Score"])
     for _ in threads:
-        df.append(q.get(), ignore_index=True)
-
-    #Would it be possible to pass information about the guide such as it's location in the target_seq
-    #and the strand it targets to this function. That way we can apped it to each guide in this dataframe
-    #df = pd.DataFrame(frames)
+        df = df.append(q.get(), ignore_index=True)
 
     df.to_csv('test.csv', index=False)
 
@@ -69,6 +65,7 @@ def process_guide(model, guide, guide_index, queue):
     guide_series = process_off_target_guides(result)    
     print('\t' + "No." + str(guide_index + 1))
     print('\t' + guide)
+    print(guide_series)
 
     queue.put(guide_series)
     return
