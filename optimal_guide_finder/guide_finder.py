@@ -5,7 +5,6 @@ Entry point to the program
 - Generate Potential Guides
 - Run through biophysical model and report results
 """
-import time
 import argparse
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -87,18 +86,9 @@ def main():
 
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
-
     # Build the model
-    __start = time.time()
-
-    model = guide_strength_calculator.initalize_model(guide_list, FASTA_FILE)
-
-    __elasped = (time.time() - __start)
-    print("Time Model Building + calculation: {:.2f}".format(__elasped))
-
-    # select guides based on output
-    # guide_strength_calculator.select_guides(model)
-
+    
+    guide_strength_calculator.initalize_model(guide_list, FASTA_FILE)
 
 if __name__ == "__main__":
     main()

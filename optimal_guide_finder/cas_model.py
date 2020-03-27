@@ -114,16 +114,13 @@ class CasModel():
         handle.close()
 
         full_sequence = str(record.seq)
-        print("full seq length", len(record.seq))
 
         positions_at_mers = self._identify_nucleotide_positions_of_mers(full_sequence, 10)
-        print("computed positions")
 
         genome_dictionary[filename] = {}
         target_sequence_list = []
 
         for full_pam in self.get_all_pams():
-            print("Full PAM", full_pam)
             target_sequence_list = \
                 self._identify_target_sequences_matching_pam(full_pam, positions_at_mers, full_sequence)
             genome_dictionary[filename][full_pam] = target_sequence_list
@@ -195,7 +192,6 @@ class CasModel():
         for mer in all_possible_mers:
             positions_at_mers[mer] = []
 
-        print("Number of Mers: ", len(list(positions_at_mers.keys())))
         counter = 0
 
         while counter < (len(full_sequence)-length):

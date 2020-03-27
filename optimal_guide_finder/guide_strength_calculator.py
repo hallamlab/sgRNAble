@@ -1,4 +1,5 @@
 import math
+import time
 from multiprocessing import Process, Queue
 import numpy as np
 import pandas as pd
@@ -11,36 +12,42 @@ def initalize_model(guide_info, filename):
     return a pandas dataframe with all the data:
         - same order as dictionary + source and target position in the beginning
     """
+    #creating the model 
+    __start = time.time()
+    print("Creating Model...")
     model = CasModel(filename)
-    num_offsite_targets = 0
-
-    for (source, _) in model.genome_dictionary.items():
-        for full_pam in model.get_all_pams():
-            num_offsite_targets += len(model.genome_dictionary[source][full_pam])
-
-    print("num offsite targets\n", num_offsite_targets)
+    __elasped = (time.time() - __start)
+    print("Time Model Building: {:.2f}".format(__elasped))
 
     q = Queue()
-
+    
+    #Process the guides
     threads = []
+    info_df = pd.DataFrame()
+    print("Processing Guides...")
+    __start = time.time()
     for gene in guide_info:
         for i, guide in enumerate(guide_info[gene][0]):
+            guide_data = pd.Series([guide, gene, guide_info[gene][1][i], guide_info[gene][2][i]], index = ["Guide Sequence", "Gene/ORF Name", "Location in Gene", "Strand"])
+
             # call
             process = Process(target=process_guide, args=(model, guide, i, q))
             process.start()
-            threads.append(process)
-
+            threads.append([process, guide_data])
+            info_df = info_df.append(guide_data, ignore_index=True)
+    
     # pull results from the queue
-    df = pd.DataFrame(index = ["Guide Sequence", "Entropy Score"])
+    result_df = pd.DataFrame()
     for _ in threads:
-        df = df.append(q.get(), ignore_index=True)
+        result_df = result_df.append(q.get(), ignore_index=True)
 
-    df.to_csv('test.csv', index=False)
+    output_df = pd.merge(info_df, result_df, on='Guide Sequence')
+    output_df.to_csv('../output/ouput.csv', index=False)
 
-    return model, df
+    __elasped = (time.time() - __start)
+    print("Time Spent Analysing Guides: {:.2f}".format(__elasped))
 
 def process_guide(model, guide, guide_index, queue):
-    print(guide)
 
     num_guide = np.array([NT_POS[nt] for nt in list(guide)])
     partition_function = 1
@@ -63,8 +70,6 @@ def process_guide(model, guide, guide_index, queue):
     
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)    
-    print('\t' + "No." + str(guide_index + 1))
-    print('\t' + guide)
     print(guide_series)
 
     queue.put(guide_series)
