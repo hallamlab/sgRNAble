@@ -44,6 +44,8 @@ def init_parser():
                              # Leave blank to see all possible guides and off target effects from your sequence""")
     parser.add_argument("-c", "--cut", required=False, nargs="+",
                         help="Sequences to avoid in guides (i.e restriction enzyme sites)")
+    parser.add_argument("-threads", required=False, default=None, type=int,
+                        help="""Number of threads to use when running the program""")
 
     return parser
 
@@ -87,8 +89,8 @@ def main():
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
     # Build the model
-    
-    guide_strength_calculator.initalize_model(guide_list, FASTA_FILE)
+
+    guide_strength_calculator.initalize_model(guide_list, FASTA_FILE, num_threads=args.threads)
 
 if __name__ == "__main__":
     main()

@@ -1,45 +1,47 @@
 import math
 import time
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Pool
 import numpy as np
 import pandas as pd
 from cas_model import CasModel
 
 NT_POS = {'A':0, 'T':1, 'C':2, 'G':3}
 
-def initalize_model(guide_info, filename):
+def initalize_model(guide_info, filename, num_threads=None):
     """
     return a pandas dataframe with all the data:
         - same order as dictionary + source and target position in the beginning
     """
-    #creating the model 
+    #creating the model
     __start = time.time()
     print("Creating Model...")
     model = CasModel(filename)
     __elasped = (time.time() - __start)
     print("Time Model Building: {:.2f}".format(__elasped))
 
-    q = Queue()
-    
     #Process the guides
-    threads = []
     info_df = pd.DataFrame()
     print("Processing Guides...")
     __start = time.time()
+
+    pool = Pool(processes=num_threads)
+    results = []
     for gene in guide_info:
         for i, guide in enumerate(guide_info[gene][0]):
-            guide_data = pd.Series([guide, gene, guide_info[gene][1][i], guide_info[gene][2][i]], index = ["Guide Sequence", "Gene/ORF Name", "Location in Gene", "Strand"])
+            guide_data = pd.Series([guide, gene, guide_info[gene][1][i], guide_info[gene][2][i]],
+                                   index=["Guide Sequence", "Gene/ORF Name", "Location in Gene", "Strand"])
 
             # call
-            process = Process(target=process_guide, args=(model, guide, i, q))
-            process.start()
-            threads.append([process, guide_data])
+            res = pool.apply_async(process_guide, (model, guide, i))
+            results.append(res)
             info_df = info_df.append(guide_data, ignore_index=True)
-    
+
+    pool.close()
+
     # pull results from the queue
     result_df = pd.DataFrame()
-    for _ in threads:
-        result_df = result_df.append(q.get(), ignore_index=True)
+    for res in results:
+        result_df = result_df.append(res.get(), ignore_index=True)
 
     output_df = pd.merge(info_df, result_df, on='Guide Sequence')
     output_df.to_csv('../output/ouput.csv', index=False)
@@ -47,7 +49,7 @@ def initalize_model(guide_info, filename):
     __elasped = (time.time() - __start)
     print("Time Spent Analysing Guides: {:.2f}".format(__elasped))
 
-def process_guide(model, guide, guide_index, queue):
+def process_guide(model, guide, guide_index):
 
     num_guide = np.array([NT_POS[nt] for nt in list(guide)])
     partition_function = 1
@@ -67,13 +69,12 @@ def process_guide(model, guide, guide_index, queue):
 
                 result.append([math.exp(-dg_target / model.RT)])
                 partition_function += math.exp(-dg_target / model.RT)
-    
+
     result.insert(0,[guide,partition_function])
-    guide_series = process_off_target_guides(result)    
+    guide_series = process_off_target_guides(result)
     print(guide_series)
 
-    queue.put(guide_series)
-    return
+    return guide_series
 
 def process_off_target_guides(guide_data, verbose=False):
     guide_seq = guide_data[0][0]
