@@ -43,11 +43,12 @@ def initalize_model(guide_info, filename, num_threads=None):
     for res in results:
         result_df = result_df.append(res.get(), ignore_index=True)
 
-    output_df = pd.merge(info_df, result_df, on='Guide Sequence')
-    output_df.to_csv('../output/ouput.csv', index=False)
+    results_df = pd.merge(info_df, result_df, on='Guide Sequence')
 
     __elasped = (time.time() - __start)
     print("Time Spent Analysing Guides: {:.2f}".format(__elasped))
+
+    return results_df
 
 def process_guide(model, guide, guide_index):
 
@@ -67,7 +68,7 @@ def process_guide(model, guide, guide_index):
                 dg_exchange = model.calc_dg_exchange(num_guide, np_target_sequence)
                 dg_target = dg_pam + dg_supercoiling + dg_exchange
 
-                result.append([math.exp(-dg_target / model.RT)])
+                result.append([target_sequence, math.exp(-dg_target / model.RT)])
                 partition_function += math.exp(-dg_target / model.RT)
 
     result.insert(0,[guide,partition_function])
@@ -80,11 +81,24 @@ def process_off_target_guides(guide_data, verbose=False):
     guide_seq = guide_data[0][0]
     partition_function = guide_data[0][1]
     guide_entropy = 0
+    no_match = False
+    exact_matches = 0
     for off_target in guide_data[1:]:
+        if !no_match and guide_seq == off_target[1]:
+            exact_matches += 1 
+        else:
+            no_match = True 
         probability = off_target[0]/partition_function
         guide_entropy -= probability*np.log2(probability)
     guide_series = pd.Series([guide_seq,
-                              guide_entropy],
+                              guide_entropy,
+                              exact_matches],
                              index = ["Guide Sequence",
-                                      "Entropy Score"])
+                                      "Entropy Score",
+                                      "Number of Exact Matches"])
     return guide_series
+
+def output_results(output_df, output_name):
+    if !output_name:
+        output_name = "output"
+    output_df.to_csv("../output/" + ouput_name +".csv", index=False)
