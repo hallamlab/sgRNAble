@@ -81,14 +81,11 @@ def process_off_target_guides(guide_data, verbose=False):
     guide_seq = guide_data[0][0]
     partition_function = guide_data[0][1]
     guide_entropy = 0
-    no_match = False
     exact_matches = 0
     for off_target in guide_data[1:]:
-        if !no_match and guide_seq == off_target[1]:
+        if guide_seq == off_target[0]:
             exact_matches += 1 
-        else:
-            no_match = True 
-        probability = off_target[0]/partition_function
+        probability = off_target[1]/partition_function
         guide_entropy -= probability*np.log2(probability)
     guide_series = pd.Series([guide_seq,
                               guide_entropy,
@@ -98,7 +95,3 @@ def process_off_target_guides(guide_data, verbose=False):
                                       "Number of Exact Matches"])
     return guide_series
 
-def output_results(output_df, output_name):
-    if !output_name:
-        output_name = "output"
-    output_df.to_csv("../output/" + ouput_name +".csv", index=False)
