@@ -41,7 +41,6 @@ def init_parser():
     parser.add_argument("-p", "--purpose", required=False, default="d",
                         help="""i: CRISPR interference on gene
                              ###a: CRISPR activation on gene, enter the number of base pair from start you would want
-                             # s: CRISPRi screening from contigs (genes found via prodigal)
                              # g: guide binding strength calculator
                              # Leave blank to see all possible guides and off target effects from your sequence""")
     parser.add_argument("-c", "--cut", required=False, nargs="+",

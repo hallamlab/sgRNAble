@@ -99,17 +99,6 @@ def select_guides(target_dict, args):
             neg_locations = [sequence_length - x for x in locations]
             guide_list[gene].append(neg_locations)
 
-    elif args.purpose == "s":
-        # Run through Prodigal
-
-        # am only running the negative side as prodigal gives you the positive side of the gene and looks
-        # for the gene on both strands (I'm sure of this, but I should verify it)
-        for gene in target_dict:
-            locations = find_pams(Seq.reverse_complement(target_dict[gene]), args.cut)
-            sequence_length = len(target_dict[gene])
-            neg_locations = [sequence_length - x for x in locations]
-            guide_list[gene].append(neg_locations)
-
     elif args.purpose == "g":
         pass
 
