@@ -10,12 +10,10 @@ GUIDE_RNA_LENGTH = 20
 AZIMUTH_DISTANCE = 24
 TOTAL_AZIMUTH_DISTANCE = 30
 
-def find_pams(sequence, cut_list):
+def find_pams(sequence):
     """
     Find the Guide RNAs in a Sequence
     """
-    if cut_list is None:
-        cut_list = []
 
     locations = []
     sequence = str(sequence)
@@ -26,16 +24,7 @@ def find_pams(sequence, cut_list):
         if i < 0:
             break
 
-        # Finds the location of the next cut argument which might be an issue
         potential_guide_location = position + i - GUIDE_RNA_LENGTH
-        discard = any(
-            cut_site in sequence[potential_guide_location: potential_guide_location + GUIDE_RNA_LENGTH] \
-                for cut_site in cut_list
-        )
-
-        # Check if there are any cutsites
-        if discard:
-            pass
 
         # check if the guide is too close to the beginning of the gene.
         # Plus one is due to the N in the GG so the entire frame should be shifted down
@@ -64,11 +53,11 @@ def select_guides(target_dict, args):
         for gene in target_dict:
             # Get guides on the positive strand
             guide_list[gene] = []
-            locations = find_pams(target_dict[gene], args.cut)
+            locations = find_pams(target_dict[gene])
             strand_array = ["Positive"] * len(locations)
 
             # Get guides on the negative strand
-            neg_locations = find_pams(Seq.reverse_complement(target_dict[gene]), args.cut)
+            neg_locations = find_pams(Seq.reverse_complement(target_dict[gene]))
             sequence_length = len(target_dict[gene])
             neg_locations = [sequence_length - x for x in neg_locations]
             negative_array = ["Negative"] * len(neg_locations)
@@ -94,26 +83,27 @@ def select_guides(target_dict, args):
     # only runs the negative strand as CRISPRi works better on negative strands
     elif args.purpose == "i":
         for gene in target_dict:
-            locations = find_pams(Seq.reverse_complement(target_dict[gene]), args.cut)
+            # Get guides on the negative strand
+            guide_list[gene] = []
+            locations = find_pams(Seq.reverse_complement(target_dict[gene]))
             sequence_length = len(target_dict[gene])
-            neg_locations = [sequence_length - x for x in locations]
-            guide_list[gene].append(neg_locations)
+            locations = [sequence_length - x for x in locations]
+            strand_array = ["Negative"] * len(neg_locations)
+
+            # Combine the information into a single array for each gene
+            # Magic numbers increase the sequence by 6 bps after NGG and 4 to raise total to 30
+            guides = ([str(Seq.reverse_complement(
+                target_dict[gene][loc-6-GUIDE_RNA_LENGTH:loc+4])) for loc in locations])
+
+            # Run the model through the Azimuth Model
+            predictions = model_comparison.predict(np.array(guides))
+            guides = [x for y, x in sorted(zip(predictions, guides), reverse=True)][:args.azimuth_cutoff]
+            locations = [x for y, x in sorted(zip(predictions, locations), reverse=True)][:args.azimuth_cutoff]
+            strand_array = [x for y, x in sorted(zip(predictions, strand_array), reverse=True)][:args.azimuth_cutoff]
+            guides = [guide[4:24] for guide in guides]
+            guide_list[gene].extend([guides, locations, strand_array])
 
     elif args.purpose == "g":
         pass
-
-    else:
-        # cull all guides which have a location larger than the user given cutoff as this is the activation case
-        for gene in target_dict:
-            guide_list[gene] = []
-            pos_locations = find_pams(target_dict[gene], args.cut)
-            pos_locations = [x for x in pos_locations if x < int(args.purpose[:-1])]
-            guide_list[gene].append(pos_locations)
-
-            locations = find_pams(Seq.reverse_complement(target_dict[gene]), args.cut)
-            sequence_length = len(target_dict[gene])
-            neg_locations = [sequence_length - x for x in locations]
-            neg_locations = [x for x in neg_locations if x < int(args.purpose[:-1])]
-            guide_list[gene].append(neg_locations)
 
     return guide_list
