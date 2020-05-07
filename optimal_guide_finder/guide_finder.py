@@ -53,8 +53,11 @@ def get_sequence(args):
     Also combines the various genome sequences
     """
     # Reads the file using biopython and creates a object called target
+    # target_dict = SeqIO.to_dict(SeqIO.parse(
+    #     args.target_sequence, args.target_sequence.split('.')[-1]))
+
     target_dict = SeqIO.to_dict(SeqIO.parse(
-        args.target_sequence, args.target_sequence.split('.')[-1]))
+        args.target_sequence, "fasta"))
     for name in target_dict:
         target_dict[name] = target_dict[name].seq.upper()
 
@@ -62,7 +65,7 @@ def get_sequence(args):
     genome = SeqRecord(Seq(""))
     for i in range(len(args.genome_sequence)):
         genome_parts = SeqIO.parse(
-            args.genome_sequence[i], args.genome_sequence[i].split('.')[-1])
+            args.genome_sequence[i], "fasta")
         for part in genome_parts:
             genome.seq = genome.seq + part.seq
 
