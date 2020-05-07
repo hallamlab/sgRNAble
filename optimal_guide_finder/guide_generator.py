@@ -28,7 +28,7 @@ def find_pams(sequence):
 
         # check if the guide is too close to the beginning of the gene.
         # Plus one is due to the N in the GG so the entire frame should be shifted down
-        elif potential_guide_location < (AZIMUTH_DISTANCE - GUIDE_RNA_LENGTH) + 1:
+        if potential_guide_location < (AZIMUTH_DISTANCE - GUIDE_RNA_LENGTH) + 1:
             pass
 
         # check if the guide is long enough for azimuth analysis
