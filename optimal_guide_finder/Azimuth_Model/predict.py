@@ -7,10 +7,10 @@ import copy
 from . import util
 import time
 from . import metrics as ranking_metrics
-import Azimuth_Model.models.regression
-import Azimuth_Model.models.ensembles
-import Azimuth_Model.models.DNN
-import Azimuth_Model.models.baselines
+from optimal_guide_finder.Azimuth_Model.models import regression
+from optimal_guide_finder.Azimuth_Model.models import ensembles
+from optimal_guide_finder.Azimuth_Model.models import DNN
+from optimal_guide_finder.Azimuth_Model.models import baselines
 import multiprocessing
 
 

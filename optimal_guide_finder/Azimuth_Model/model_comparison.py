@@ -1,15 +1,16 @@
-import Azimuth_Model.predict as apd
+from optimal_guide_finder import Azimuth_Model
+from optimal_guide_finder.Azimuth_Model import predict as apd
 import copy
 import os
 import numpy as np
-import Azimuth_Model.util
+from optimal_guide_finder.Azimuth_Model import util
 import shutil
 import pickle
 import pylab as plt
 import pandas
-import Azimuth_Model.local_multiprocessing
-import Azimuth_Model.load_data
-import Azimuth_Model.features.featurization as feat
+from optimal_guide_finder.Azimuth_Model import local_multiprocessing
+from optimal_guide_finder.Azimuth_Model import load_data
+from optimal_guide_finder.Azimuth_Model.features import featurization as feat
 
 def check_feature_set_dims(feature_sets):
     F2 = None
@@ -536,6 +537,7 @@ def predict(seq, aa_cut=None, percent_peptide=None, model=None, model_file=None,
 
     if model_file is None:
         azimuth_saved_model_dir = os.path.join(os.path.dirname(Azimuth_Model.__file__), 'saved_models')
+        # azimuth_saved_model_dir = os.path.join(os.path.dirname(Azimuth_Model.__file__), 'saved_models')
         if np.any(percent_peptide == -1) or (percent_peptide is None and aa_cut is None):
             #print("No model file specified, using V3_model_nopos")
             model_name = 'V3_model_nopos.pickle'

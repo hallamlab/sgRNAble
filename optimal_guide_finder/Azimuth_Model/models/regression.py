@@ -3,9 +3,9 @@ import sklearn
 from sklearn.linear_model import ARDRegression, LinearRegression
 from sklearn.metrics import roc_curve, auc
 import sklearn.linear_model
-import Azimuth_Model.util
-import Azimuth_Model.metrics as ranking_metrics
-import Azimuth_Model.predict
+from optimal_guide_finder.Azimuth_Model import util
+from optimal_guide_finder.Azimuth_Model import metrics as ranking_metrics
+from optimal_guide_finder.Azimuth_Model import predict
 import numbers
 
 def ARDRegression_on_fold(feature_sets, train, test, y, y_all, X, dim, dimsum, learn_options):
