@@ -43,8 +43,8 @@ python optimal_guide_finder/guide_finder.py -t data/Fasta_Files/GFP.fasta -g dat
 ```
 
 ## Authors
-Siddarth Raghuvanshi
+Siddarth Raghuvanshi, Ahmed Abdelmoneim, Avery Noonan
 
-Ahmed Abdelmoneim
+## Contact
 
-Avery Noonan
+Need something? Send me an email at Raghuvanshi.Siddarth@gmail.com
