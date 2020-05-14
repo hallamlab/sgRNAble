@@ -1,35 +1,26 @@
-# CRISPR_Guide_RNA
+# sgRNAble
 
-Uses the model developed by Farasat/Salis to run a script that finds the best guide RNAs
-for a given gene (Target Sequence), Genome and any additional DNA sequences. The model is based on the
-information based on CAS9 and would be different for other CRISPR systems
+Brief Outline
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine
+## Installation
 
 ### Prerequisites
 
 What things you need to install the software and how to install them
 
-```
-python3
-```
+* Python3
+* Environment Manager (Anaconda is used)
 
-### Installing
 
-A step by step series of examples that tell you how to get a development env running
+### Installation Guide
 
-Say what the step will be
+Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies. 
 
 ```
-Give the example
-```
-
-And repeat
-
-```
-until finished
+conda create --name sgRNAble python=3.7
+conda activate sgRNAble
+pip install sgRNAble
+conda deactivate
 ```
 
 End with an example of getting some data out of the system or using it for a little demo
@@ -49,55 +40,7 @@ navigate to the folder in terminal and type in
 python optimal_guide_finder/guide_finder.py -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
 ```
 
-Follow the prompts on screen.
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### And coding style tests
-
-Ensure Pylint is installed:
-
-You can either set-up Pylint in your development enviornment directly or run through the command line
-
-```
-# in the project's root directory run:
-
-pylint --max-line-length=120 optimal_guide_calc
-```
-
-Make sure pylint passes with no errors or warning before commiting your code.
-
-In addition make sure any added code is documented, function docstrings should follow the following format:
-
-```
-    """
-    [summary]
-
-    Arguments:
-        arg1 {[type]} -- [description]
-        arg2 {[type]} -- [description]
-
-    Raises:
-        exceptionType: [description]
-
-    Returns:
-        [type] -- [description]
-    """
-```
-
-## Contributing
-
-
 ## Authors
-
-
-## License
-
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+Siddarth Raghuvanshi
+Ahmed Abdelmoneim
+Avery Noonan
