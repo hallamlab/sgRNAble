@@ -23,16 +23,18 @@ pip install sgRNAble
 conda deactivate
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+In the future, the program can be run by activating the python env and running the program.
+
+```
+conda activate sgRNAble
+sgRNAble -t TARGET_FILE -g GENOME_FILE
+conda deactivate
+```
 
 ## Quick Run Guide
 
 Ensure that you have a file containing the gene of interest (Target Sequence), the genome of the organism (Genome), and
 any additional DNA present. The gene of interest must be present in the genome or the other additional DNA added to the script.
-
-To run the script, ensure you have the following libraries installed:
-  - Biopython
-  - Tkinter
 
 navigate to the folder in terminal and type in
 
