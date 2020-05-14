@@ -4,24 +4,35 @@ from multiprocessing import Process, Queue, Pool
 import numpy as np
 import pandas as pd
 from cas_model import CasModel
+import logging
 
 NT_POS = {'A':0, 'T':1, 'C':2, 'G':3}
+
+def initialize_logger(output_file):
+    #creating a basic logger
+    logging.basicConfig(level=logging.INFO,
+                        filename='../output/' + output_file + '.log',
+                        filemode='w')
+    console_logger = logging.StreamHandler()
+    console_logger.setLevel(logging.INFO)
+    logging.getLogger().addHandler(console_logger)
 
 def initalize_model(guide_info, filename, num_threads=None):
     """
     return a pandas dataframe with all the data:
         - same order as dictionary + source and target position in the beginning
     """
+
     #creating the model
     __start = time.time()
-    print("Creating Model...")
+    logging.info("Creating Model...")
     model = CasModel(filename)
     __elasped = (time.time() - __start)
-    print("Time Model Building: {:.2f}".format(__elasped))
+    logging.info("Time Model Building: {:.2f}".format(__elasped))
 
     #Process the guides
     info_df = pd.DataFrame()
-    print("Processing Guides...")
+    logging.info("Processing Guides...")
     __start = time.time()
 
     pool = Pool(processes=num_threads)
@@ -46,7 +57,7 @@ def initalize_model(guide_info, filename, num_threads=None):
     results_df = pd.merge(info_df, result_df, on='Guide Sequence')
 
     __elasped = (time.time() - __start)
-    print("Time Spent Analysing Guides: {:.2f}".format(__elasped))
+    logging.info("Time Spent Analysing Guides: {:.2f}".format(__elasped))
 
     return results_df
 
@@ -73,7 +84,7 @@ def process_guide(model, guide, guide_index):
 
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)
-    print(guide_series)
+    logging.info(guide_series)
 
     return guide_series
 

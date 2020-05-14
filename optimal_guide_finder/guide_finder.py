@@ -90,6 +90,7 @@ def main():
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
     # Build and run the model
+    guide_strength_calculator.initialize_logger(args.output_name)
     results_df = guide_strength_calculator.initalize_model(guide_list, FASTA_FILE, num_threads=args.threads)
 
     results_df.to_csv("../output/" + args.output_name + ".csv", index=False)
