@@ -1,6 +1,6 @@
 # sgRNAble
 
-Brief Outline
+Abstract
 
 ## Installation
 
@@ -43,7 +43,9 @@ python optimal_guide_finder/guide_finder.py -t data/Fasta_Files/GFP.fasta -g dat
 ```
 
 ## Authors
-Siddarth Raghuvanshi, Ahmed Abdelmoneim, and Avery Noonan
+* [Siddarth Raghuvanshi](https://github.com/Siddarth-Raghuvanshi)
+* [Ahmed Abdelmoneim](https://github.com/AhmedAbdelmoneim)
+* Avery Noonan
 
 ## Contact
 
