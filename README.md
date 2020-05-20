@@ -9,7 +9,7 @@ Abstract
 What things you need to install the software and how to install them
 
 * Python3
-* Environment Manager (Anaconda is used)
+* Environment Manager (Anaconda is used here)
 
 
 ### Installation Guide
