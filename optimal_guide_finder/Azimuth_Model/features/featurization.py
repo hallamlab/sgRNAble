@@ -4,7 +4,7 @@ import sklearn
 import numpy as np
 import Bio.SeqUtils as SeqUtil
 import Bio.Seq as Seq
-import Azimuth_Model.util
+from optimal_guide_finder.Azimuth_Model import util
 import sys
 import Bio.SeqUtils.MeltingTemp as Tm
 import pickle

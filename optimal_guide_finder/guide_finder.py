@@ -9,12 +9,12 @@ import argparse
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-import guide_generator
-import guide_strength_calculator
+from optimal_guide_finder import guide_generator
+from optimal_guide_finder import guide_strength_calculator
 import pandas as pd
 import numpy as np
 
-FASTA_FILE = "../output/Run_Genome_Plus_RC"
+FASTA_FILE = "output/Run_Genome_Plus_RC"
 
 def init_parser():
     """

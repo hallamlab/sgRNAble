@@ -3,7 +3,7 @@ Module for generating list of potentail guides
 """
 import numpy as np
 from Bio.Seq import Seq
-from Azimuth_Model import model_comparison
+from optimal_guide_finder.Azimuth_Model import model_comparison
 
 PAM = "GG"
 GUIDE_RNA_LENGTH = 20

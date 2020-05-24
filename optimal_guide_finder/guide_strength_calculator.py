@@ -3,7 +3,7 @@ import time
 from multiprocessing import Process, Queue, Pool
 import numpy as np
 import pandas as pd
-from cas_model import CasModel
+from optimal_guide_finder.cas_model import CasModel
 import logging
 
 NT_POS = {'A':0, 'T':1, 'C':2, 'G':3}
