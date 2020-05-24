@@ -6,13 +6,12 @@ Entry point to the program
 - Run through biophysical model and report results
 """
 import argparse
+import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from optimal_guide_finder import guide_generator
 from optimal_guide_finder import guide_strength_calculator
-import pandas as pd
-import numpy as np
 
 FASTA_FILE = "output/Run_Genome_Plus_RC"
 
@@ -46,6 +45,8 @@ def init_parser():
                              # Leave blank to see all possible guides and off target effects from your sequence""")
     parser.add_argument("-threads", required=False, default=None, type=int,
                         help="""Number of threads to use when running the program""")
+    parser.add_argument("-c", "--copy_number", required=False, default=1, type=int,
+                        help="""Number of copies of target gene present""")
 
     return parser
 
@@ -54,10 +55,7 @@ def get_sequence(args):
     Returns the upper case sequences as strings from the files given as arguments.
     Also combines the various genome sequences
     """
-    # Reads the file using biopython and creates a object called target
-    # target_dict = SeqIO.to_dict(SeqIO.parse(
-    #     args.target_sequence, args.target_sequence.split('.')[-1]))
-
+    # Reads the file using biopython and creates an object called target
     target_dict = SeqIO.to_dict(SeqIO.parse(
         args.target_sequence, "fasta"))
     for name in target_dict:
@@ -71,7 +69,12 @@ def get_sequence(args):
         for part in genome_parts:
             genome.seq = genome.seq + part.seq
 
-    return target_dict, genome.seq.upper()
+    # append target sequence to genome based on copy number
+    if args.copy_number > 1:
+        target_seq = SeqIO.parse(args.target_sequence, "fasta")
+        for i in range(1, args.copy_number):
+            for part in target_seq:
+                genome.seq = genome.seq + part.seq
 
 def main():
     """
@@ -86,8 +89,8 @@ def main():
     target_dict, genome = get_sequence(args)
 
     ref_record = SeqRecord(genome,
-                           id="refgenome", 
-                           name="reference", 
+                           id="refgenome",
+                           name="reference",
                            description="a reference background")
     ref_record = ref_record + ref_record.reverse_complement()
     SeqIO.write(ref_record, FASTA_FILE, "fasta")
@@ -97,15 +100,15 @@ def main():
     # Build and run the model
     guide_strength_calculator.initialize_logger(args.output_name)
 
-    results_df = guide_strength_calculator.initalize_model(guide_list, 
+    results_df = guide_strength_calculator.initalize_model(guide_list,
                                                            FASTA_FILE,
                                                            num_threads=args.threads)
-    rank_array = np.tile(np.arange(1,args.azimuth_cutoff+1), 
-                           len(results_df['Gene/ORF Name'].unique())) 
-    results_df.sort_values(by=['Gene/ORF Name','Entropy Score'], inplace=True)
+    rank_array = np.tile(np.arange(1, args.azimuth_cutoff+1),
+                         len(results_df['Gene/ORF Name'].unique()))
+    results_df.sort_values(by=['Gene/ORF Name', 'Entropy Score'], inplace=True)
     results_df['Rank in Target Gene'] = rank_array
 
-    results_df.to_csv("../output/" + args.output_name + ".csv", index=False)
+    results_df.to_csv("output/" + args.output_name + ".csv", index=False)
 
 if __name__ == "__main__":
     main()
