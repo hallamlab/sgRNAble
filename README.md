@@ -1,47 +1,40 @@
-# CRISPR_Guide_RNA
+# sgRNAble
 
-Uses the model developed by Farasat/Salis to run a script that finds the best guide RNAs
-for a given gene (Target Sequence), Genome and any additional DNA sequences. The model is based on the
-information based on CAS9 and would be different for other CRISPR systems
+Abstract
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine
+## Installation
 
 ### Prerequisites
 
 What things you need to install the software and how to install them
 
-```
-python3
-```
+* Python3
+* Environment Manager (Anaconda is used here)
 
-### Installing
 
-A step by step series of examples that tell you how to get a development env running
+### Installation Guide
 
-Say what the step will be
+Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies. 
 
 ```
-Give the example
+conda create --name sgRNAble python=3.7
+conda activate sgRNAble
+pip install sgRNAble
+conda deactivate
 ```
 
-And repeat
+In the future, the program can be run by activating the python env and running the program.
 
 ```
-until finished
+conda activate sgRNAble
+sgRNAble -t TARGET_FILE -g GENOME_FILE
+conda deactivate
 ```
-
-End with an example of getting some data out of the system or using it for a little demo
 
 ## Quick Run Guide
 
 Ensure that you have a file containing the gene of interest (Target Sequence), the genome of the organism (Genome), and
 any additional DNA present. The gene of interest must be present in the genome or the other additional DNA added to the script.
-
-To run the script, ensure you have the following libraries installed:
-  - Biopython
-  - Tkinter
 
 navigate to the folder in terminal and type in
 
@@ -49,55 +42,11 @@ navigate to the folder in terminal and type in
 python optimal_guide_finder/guide_finder.py -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
 ```
 
-Follow the prompts on screen.
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### And coding style tests
-
-Ensure Pylint is installed:
-
-You can either set-up Pylint in your development enviornment directly or run through the command line
-
-```
-# in the project's root directory run:
-
-pylint --max-line-length=120 optimal_guide_calc
-```
-
-Make sure pylint passes with no errors or warning before commiting your code.
-
-In addition make sure any added code is documented, function docstrings should follow the following format:
-
-```
-    """
-    [summary]
-
-    Arguments:
-        arg1 {[type]} -- [description]
-        arg2 {[type]} -- [description]
-
-    Raises:
-        exceptionType: [description]
-
-    Returns:
-        [type] -- [description]
-    """
-```
-
-## Contributing
-
-
 ## Authors
+* [Siddarth Raghuvanshi](https://github.com/Siddarth-Raghuvanshi)
+* [Ahmed Abdelmoneim](https://github.com/AhmedAbdelmoneim)
+* Avery Noonan
 
+## Contact
 
-## License
-
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+Need something? Send me an email at Raghuvanshi.Siddarth@gmail.com

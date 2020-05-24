@@ -11,6 +11,8 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from optimal_guide_finder import guide_generator
 from optimal_guide_finder import guide_strength_calculator
+import pandas as pd
+import numpy as np
 
 FASTA_FILE = "output/Run_Genome_Plus_RC"
 
@@ -83,14 +85,25 @@ def main():
     # Get the sequences in a Seq format from user fasta or genebank files
     target_dict, genome = get_sequence(args)
 
-    ref_record = SeqRecord(genome, id="refgenome", name="reference", description="a reference background")
+    ref_record = SeqRecord(genome,
+                           id="refgenome", 
+                           name="reference", 
+                           description="a reference background")
     ref_record = ref_record + ref_record.reverse_complement()
     SeqIO.write(ref_record, FASTA_FILE, "fasta")
 
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
     # Build and run the model
-    results_df = guide_strength_calculator.initalize_model(guide_list, FASTA_FILE, num_threads=args.threads)
+    guide_strength_calculator.initialize_logger(args.output_name)
+
+    results_df = guide_strength_calculator.initalize_model(guide_list, 
+                                                           FASTA_FILE,
+                                                           num_threads=args.threads)
+    rank_array = np.tile(np.arange(1,args.azimuth_cutoff+1), 
+                           len(results_df['Gene/ORF Name'].unique())) 
+    results_df.sort_values(by=['Gene/ORF Name','Entropy Score'], inplace=True)
+    results_df['Rank in Target Gene'] = rank_array
 
     results_df.to_csv("../output/" + args.output_name + ".csv", index=False)
 
