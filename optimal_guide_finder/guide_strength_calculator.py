@@ -11,7 +11,7 @@ NT_POS = {'A':0, 'T':1, 'C':2, 'G':3}
 def initialize_logger(output_file):
     #creating a basic logger
     logging.basicConfig(level=logging.INFO,
-                        filename='../output/' + output_file + '.log',
+                        filename='output/' + output_file + '.log',
                         filemode='w')
     console_logger = logging.StreamHandler()
     console_logger.setLevel(logging.INFO)

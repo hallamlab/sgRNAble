@@ -14,7 +14,7 @@ What things you need to install the software and how to install them
 
 ### Installation Guide
 
-Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies. 
+Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies.
 
 ```
 conda create --name sgRNAble python=3.7
@@ -39,7 +39,9 @@ any additional DNA present. The gene of interest must be present in the genome o
 navigate to the folder in terminal and type in
 
 ```
-python optimal_guide_finder/guide_finder.py -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
+pip install .
+
+THETOOL -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
 ```
 
 ## Authors
