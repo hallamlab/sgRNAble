@@ -76,6 +76,8 @@ def get_sequence(args):
             for part in target_seq:
                 genome.seq = genome.seq + part.seq
 
+    return target_dict, genome.seq.upper()
+
 def main():
     """
     Main workflow
