@@ -45,7 +45,7 @@ def init_parser():
                              # Leave blank to see all possible guides and off target effects from your sequence""")
     parser.add_argument("-threads", required=False, default=None, type=int,
                         help="""Number of threads to use when running the program""")
-    parser.add_argument("-c", "--copy_number", required=False, default=1, type=int,
+    parser.add_argument("-c", "--copy_number", required=False, default=1, nargs='+',
                         help="""Number of copies of target gene present""")
 
     return parser
@@ -64,17 +64,12 @@ def get_sequence(args):
     # Reads the Genome files using biopython and combines them into one genome object
     genome = SeqRecord(Seq(""))
     for i in range(len(args.genome_sequence)):
-        genome_parts = SeqIO.parse(
-            args.genome_sequence[i], "fasta")
-        for part in genome_parts:
-            genome.seq = genome.seq + part.seq
-
-    # append target sequence to genome based on copy number
-    if args.copy_number > 1:
-        target_seq = SeqIO.parse(args.target_sequence, "fasta")
-        for i in range(1, args.copy_number):
-            for part in target_seq:
+        genome_parts = SeqIO.parse(args.genome_sequence[i], "fasta")
+        for j,part in enumerate(genome_parts):
+            if args.copy_number == 1:
                 genome.seq = genome.seq + part.seq
+            else:
+                genome.seq = genome.seq + part.seq*int(args.copy_number[i])
 
     return target_dict, genome.seq.upper()
 
