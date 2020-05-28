@@ -14,12 +14,13 @@ What things you need to install the software and how to install them
 
 ### Installation Guide
 
-Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies.
+Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies. Start this process by navigating to the path of the github download(inside the folder). 
 
 ```
+cd PATH/TO/sgRNAble
 conda create --name sgRNAble python=3.7
 conda activate sgRNAble
-pip install sgRNAble
+pip install .
 conda deactivate
 ```
 
@@ -27,7 +28,7 @@ In the future, the program can be run by activating the python env and running t
 
 ```
 conda activate sgRNAble
-sgRNAble -t TARGET_FILE -g GENOME_FILE
+THETOOL -t TARGET_FILE -g GENOME_FILE
 conda deactivate
 ```
 
