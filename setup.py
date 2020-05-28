@@ -28,7 +28,7 @@ setuptools.setup(
         'XlsxWriter==1.1.5',
         'numpy==1.16.2',
         'scipy==1.4.1',
-        'Bio==0.1.0',
+        'biopython==1.76',
         'GPy==1.9.9',
         'ipython==7.10.1',
         'azimuth==2.0',
