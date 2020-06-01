@@ -95,7 +95,7 @@ def process_off_target_guides(guide_data, verbose=False):
     partition_function = guide_data[0][1]
     guide_entropy = 0
     exact_matches = 0
-    for i, off_target in enumerate(guide_data[1:]):
+    for off_target in guide_data[1:]:
         if guide_seq == off_target[0]:
             exact_matches += 1
         probability = off_target[1]/partition_function
