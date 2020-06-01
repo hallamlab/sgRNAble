@@ -117,6 +117,7 @@ venv.bak/
 
 # VSCode project settings
 .vscode
+_config.yml
 
 # Rope project settings
 .ropeproject

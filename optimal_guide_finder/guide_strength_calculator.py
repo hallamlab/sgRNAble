@@ -82,6 +82,8 @@ def process_guide(model, guide, guide_index):
                 result.append([target_sequence, math.exp(-dg_target / model.RT)])
                 partition_function += math.exp(-dg_target / model.RT)
 
+                print_guide_info(guide_index, guide, dg_target, partition_function)
+
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)
     logging.info(guide_series)
@@ -93,9 +95,9 @@ def process_off_target_guides(guide_data, verbose=False):
     partition_function = guide_data[0][1]
     guide_entropy = 0
     exact_matches = 0
-    for off_target in guide_data[1:]:
+    for i, off_target in enumerate(guide_data[1:]):
         if guide_seq == off_target[0]:
-            exact_matches += 1 
+            exact_matches += 1
         probability = off_target[1]/partition_function
         guide_entropy -= probability*np.log2(probability)
     guide_series = pd.Series([guide_seq,
@@ -106,3 +108,5 @@ def process_off_target_guides(guide_data, verbose=False):
                                       "Number of Exact Matches"])
     return guide_series
 
+def print_guide_info(position, sequence, dg, partition_function):
+    logging.info('\t'.join([str(position), sequence, str(round(dg, 2)), str(partition_function)]))

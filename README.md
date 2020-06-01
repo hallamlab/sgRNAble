@@ -28,7 +28,7 @@ In the future, the program can be run by activating the python env and running t
 
 ```
 conda activate sgRNAble
-THETOOL -t TARGET_FILE -g GENOME_FILE
+sgrnable -t TARGET_FILE -g GENOME_FILE
 conda deactivate
 ```
 
@@ -42,7 +42,7 @@ navigate to the folder in terminal and type in
 ```
 pip install .
 
-THETOOL -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
+sgrnable -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
 ```
 
 ## Authors

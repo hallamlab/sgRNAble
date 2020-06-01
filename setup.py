@@ -4,10 +4,10 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="the-tool",
+    name="sgRNAble",
     version="0.0.1",
-    author="",
-    author_email="",
+    author="Avery Noonan, Siddarth Raghuvanshi, Ahmed Abdelmoneim",
+    author_email="sidr97@gmail.com",
     description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -20,7 +20,7 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     entry_points={
-        "console_scripts": ['thetool = optimal_guide_finder.guide_finder:main']
+        "console_scripts": ['sgrnable = optimal_guide_finder.guide_finder:main']
     },
     install_requires=[
         'matplotlib==3.2.1',
