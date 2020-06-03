@@ -43,7 +43,7 @@ def initalize_model(guide_info, filename, num_threads=None):
                                    index=["Guide Sequence", "Gene/ORF Name", "Location in Gene", "Strand"])
 
             # call
-            res = pool.apply_async(process_guide, (model, guide, i))
+            res = pool.apply_async(process_guide, (model, guide))
             results.append(res)
             info_df = info_df.append(guide_data, ignore_index=True)
 
@@ -61,12 +61,13 @@ def initalize_model(guide_info, filename, num_threads=None):
 
     return results_df
 
-def process_guide(model, guide, guide_index):
+def process_guide(model, guide):
 
     num_guide = np.array([NT_POS[nt] for nt in list(guide)])
     partition_function = 1
 
     result = []
+    dgs = []
 
     for (source, _) in model.genome_dictionary.items():
 
@@ -81,12 +82,15 @@ def process_guide(model, guide, guide_index):
 
                 result.append([target_sequence, math.exp(-dg_target / model.RT)])
                 partition_function += math.exp(-dg_target / model.RT)
-
-                print_guide_info(guide_index, guide, dg_target, partition_function)
+                dgs.append(dg_target)
 
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)
     logging.info(guide_series)
+    dgs.sort()
+    info_dict = info_logging(partition_function, dgs[:5], model.RT)
+    info_dict['guide'] = guide
+    logging.info(info_dict)
 
     return guide_series
 
@@ -108,5 +112,9 @@ def process_off_target_guides(guide_data, verbose=False):
                                       "Number of Exact Matches"])
     return guide_series
 
-def print_guide_info(position, sequence, dg, partition_function):
-    logging.info('\t'.join([str(position), sequence, str(round(dg, 2)), str(partition_function)]))
+def info_logging(partition_function, dgs, RT):
+    info_dict = {'dg':[], 'probability':[]}
+    for dg in dgs:
+        info_dict['dg'].append(dg)
+        info_dict['probability'].append(math.exp(-dg/RT)/partition_function)
+    return info_dict
