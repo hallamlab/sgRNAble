@@ -100,8 +100,11 @@ def main():
     results_df = guide_strength_calculator.initalize_model(guide_list,
                                                            FASTA_FILE,
                                                            num_threads=args.threads)
-    rank_array = np.tile(np.arange(1, args.azimuth_cutoff+1),
-                         len(results_df['Gene/ORF Name'].unique()))
+    #generate and append Rank array
+    rank_array = []
+    for gene in results_df['Gene/ORF Name'].unique():
+        num_guides = results_df[results_df['Gene/ORF Name'] == gene]['Guide Sequence'].nunique()
+        rank_array.extend(list(np.arange(1, num_guides+1)))
     results_df.sort_values(by=['Gene/ORF Name', 'Entropy Score'], inplace=True)
     results_df['Rank in Target Gene'] = rank_array
 
