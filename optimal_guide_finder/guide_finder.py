@@ -101,11 +101,11 @@ def main():
                                                            FASTA_FILE,
                                                            num_threads=args.threads)
     #generate and append Rank array
+    results_df.sort_values(by=['Gene/ORF Name', 'Entropy Score'], inplace=True)
     rank_array = []
     for gene in results_df['Gene/ORF Name'].unique():
         num_guides = results_df[results_df['Gene/ORF Name'] == gene]['Guide Sequence'].nunique()
         rank_array.extend(list(np.arange(1, num_guides+1)))
-    results_df.sort_values(by=['Gene/ORF Name', 'Entropy Score'], inplace=True)
     results_df['Rank in Target Gene'] = rank_array
 
     results_df.to_csv("output/" + args.output_name + ".csv", index=False)
