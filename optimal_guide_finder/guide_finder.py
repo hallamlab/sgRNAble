@@ -23,8 +23,8 @@ def init_parser():
         ArgumentParser -- parser ready to accept arguments
     """
     # Parser to get the files listed in the arguments
-    parser = argparse.ArgumentParser(description="""This program helps you to find all possible guide RNAs that will \n
-                                       target the gene. Then using the model created by Salis Lab, \n
+    parser = argparse.ArgumentParser(description="""This program helps you to find all possible guide RNAs that will 
+                                       target the gene. Then using the model created by Salis Lab, 
                                        you can see the off target effects for the each possible guide.""",
                                      formatter_class=argparse.RawTextHelpFormatter)
 

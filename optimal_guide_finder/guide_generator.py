@@ -88,7 +88,7 @@ def select_guides(target_dict, args):
             locations = find_pams(Seq.reverse_complement(target_dict[gene]))
             sequence_length = len(target_dict[gene])
             locations = [sequence_length - x for x in locations]
-            strand_array = ["Negative"] * len(neg_locations)
+            strand_array = ["Negative"] * len(locations)
 
             # Combine the information into a single array for each gene
             # Magic numbers increase the sequence by 6 bps after NGG and 4 to raise total to 30
