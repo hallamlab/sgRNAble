@@ -102,6 +102,7 @@ def main():
                                                            num_threads=args.threads)
     #generate and append Rank array
     results_df.sort_values(by=['Gene/ORF Name', 'Entropy Score'], inplace=True)
+    results_df.drop_duplicates(inplace=True)
     rank_array = []
     for gene in results_df['Gene/ORF Name'].unique():
         num_guides = results_df[results_df['Gene/ORF Name'] == gene]['Guide Sequence'].nunique()
