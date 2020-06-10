@@ -105,7 +105,7 @@ def main():
     results_df.drop_duplicates(inplace=True)
     rank_array = []
     for gene in results_df['Gene/ORF Name'].unique():
-        num_guides = results_df[results_df['Gene/ORF Name'] == gene]['Guide Sequence'].nunique()
+        num_guides = len(results_df[results_df['Gene/ORF Name'] == gene]['Guide Sequence'])
         rank_array.extend(list(np.arange(1, num_guides+1)))
     results_df['Rank in Target Gene'] = rank_array
 
