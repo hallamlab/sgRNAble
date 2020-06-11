@@ -72,6 +72,11 @@ def select_guides(target_dict, args):
             locations.extend(neg_locations)
             strand_array.extend(negative_array)
 
+            #In case the gene is too short to have no Pam sites
+            if not guides:
+                guide_list.pop(gene)
+                continue
+
             # Run the model through the Azimuth Model
             predictions = model_comparison.predict(np.array(guides))
             guides = [x for y, x in sorted(zip(predictions, guides), reverse=True)][:args.azimuth_cutoff]
@@ -94,6 +99,11 @@ def select_guides(target_dict, args):
             # Magic numbers increase the sequence by 6 bps after NGG and 4 to raise total to 30
             guides = ([str(Seq.reverse_complement(
                 target_dict[gene][loc-6-GUIDE_RNA_LENGTH:loc+4])) for loc in locations])
+            
+            #In case the gene is too short to have no Pam sites
+            if not guides:
+                guide_list.pop(gene)
+                continue
 
             # Run the model through the Azimuth Model
             predictions = model_comparison.predict(np.array(guides))
