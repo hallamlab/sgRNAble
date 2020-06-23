@@ -6,6 +6,7 @@ Entry point to the program
 - Run through biophysical model and report results
 """
 import argparse
+import os 
 import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -82,6 +83,10 @@ def main():
 
     #Create the path of the created genome file
     genome_location = args.output_path + '/Run_Genome'
+    try: 
+        os.makedirs(args.output_path)
+    except FileExistsError:
+        pass
 
     # Get the sequences in a Seq format from user fasta or genebank files
     target_dict, genome = get_sequence(args)
