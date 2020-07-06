@@ -13,6 +13,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from optimal_guide_finder import guide_generator
 from optimal_guide_finder import guide_strength_calculator
+import logging
 
 def init_parser():
     """
@@ -72,6 +73,15 @@ def get_sequence(args):
 
     return target_dict, genome.seq.upper()
 
+def initialize_logger(output_file):
+    #creating a basic logger
+    logging.basicConfig(level=logging.INFO,
+                        filename= output_file + '/run.log',
+                        filemode='w')
+    console_logger = logging.StreamHandler()
+    console_logger.setLevel(logging.INFO)
+    logging.getLogger().addHandler(console_logger)
+
 def main():
     """
     Main workflow
@@ -100,9 +110,10 @@ def main():
 
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
-    # Build and run the model
-    guide_strength_calculator.initialize_logger(args.output_path)
+    #Initialize the logger 
+    initialize_logger(args.output_path)
 
+    # Build and run the model
     results_df = guide_strength_calculator.initalize_model(guide_list,
                                                            genome_location,
                                                            num_threads=args.threads)

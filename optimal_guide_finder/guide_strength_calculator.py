@@ -5,17 +5,9 @@ import numpy as np
 import pandas as pd
 from optimal_guide_finder.cas_model import CasModel
 import logging
+logger = logging.getLogger(__name__)
 
 NT_POS = {'A':0, 'T':1, 'C':2, 'G':3}
-
-def initialize_logger(output_file):
-    #creating a basic logger
-    logging.basicConfig(level=logging.INFO,
-                        filename= output_file + '/run.log',
-                        filemode='w')
-    console_logger = logging.StreamHandler()
-    console_logger.setLevel(logging.INFO)
-    logging.getLogger().addHandler(console_logger)
 
 def initalize_model(guide_info, filename, num_threads=None):
     """
@@ -25,14 +17,14 @@ def initalize_model(guide_info, filename, num_threads=None):
 
     #creating the model
     __start = time.time()
-    logging.info("Creating Model...")
+    logger.info("Creating Model...")
     model = CasModel(filename)
     __elasped = (time.time() - __start)
-    logging.info("Time Model Building: {:.2f}".format(__elasped))
+    logger.info("Time Model Building: {:.2f}".format(__elasped))
 
     #Process the guides
     info_df = pd.DataFrame()
-    logging.info("Processing Guides...")
+    logger.info("Processing Guides...")
     __start = time.time()
 
     pool = Pool(processes=num_threads)
@@ -57,7 +49,7 @@ def initalize_model(guide_info, filename, num_threads=None):
     results_df = pd.merge(info_df, result_df, on='Guide Sequence')
 
     __elasped = (time.time() - __start)
-    logging.info("Time Spent Analysing Guides: {:.2f}".format(__elasped))
+    logger.info("Time Spent Analysing Guides: {:.2f}".format(__elasped))
 
     return results_df
 
@@ -86,11 +78,11 @@ def process_guide(model, guide):
 
     result.insert(0,[guide,partition_function])
     guide_series = process_off_target_guides(result)
-    logging.info(guide_series)
+    logger.info(guide_series)
     dgs.sort()
     info_dict = info_logging(partition_function, dgs[:5], model.RT)
     info_dict['guide'] = guide
-    logging.info(info_dict)
+    logger.info(info_dict)
 
     return guide_series
 

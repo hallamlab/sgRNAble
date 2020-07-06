@@ -6,6 +6,8 @@ import scipy.io
 from Bio import SeqIO
 from numba import types
 from numba import jit, float64, int32
+import logging
+logger = logging.getLogger(__name__)
 
 class CasModel():
 
@@ -196,7 +198,10 @@ class CasModel():
 
         while counter < (len(full_sequence)-length):
             word = full_sequence[counter: counter+length]
-            positions_at_mers[word].append(counter+length)
+            try:
+                positions_at_mers[word].append(counter+length)
+            except:
+                logger.error('Genome sequence contains non-nucleotide character')
             counter += 1
 
         return positions_at_mers
