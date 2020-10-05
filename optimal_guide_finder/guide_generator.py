@@ -14,7 +14,6 @@ def find_pams(sequence):
     """
     Find the Guide RNAs in a Sequence
     """
-
     locations = []
     sequence = str(sequence)
     position = 0
@@ -99,7 +98,7 @@ def select_guides(target_dict, args):
             # Magic numbers increase the sequence by 6 bps after NGG and 4 to raise total to 30
             guides = ([str(Seq.reverse_complement(
                 target_dict[gene][loc-6-GUIDE_RNA_LENGTH:loc+4])) for loc in locations])
-            
+
             #In case the gene is too short to have no Pam sites
             if not guides:
                 guide_list.pop(gene)

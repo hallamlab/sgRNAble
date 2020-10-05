@@ -6,7 +6,7 @@ Entry point to the program
 - Run through biophysical model and report results
 """
 import argparse
-import os 
+import os
 import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -58,25 +58,26 @@ def get_sequence(args):
     # Reads the file using biopython and creates an object called target
     target_dict = SeqIO.to_dict(SeqIO.parse(
         args.target_sequence, "fasta"))
+
     for name in target_dict:
-        target_dict[name] = target_dict[name].seq.upper()
+        target_dict[name] = target_dict[name].seq.ungap(gap="N").upper()
 
     # Reads the Genome files using biopython and combines them into one genome object
     genome = SeqRecord(Seq(""))
     for i in range(len(args.genome_sequence)):
         genome_parts = SeqIO.parse(args.genome_sequence[i], "fasta")
-        for j,part in enumerate(genome_parts):
+        for part in genome_parts:
             if args.copy_number == 1:
-                genome.seq = genome.seq + part.seq
+                genome.seq = genome.seq + part.seq.ungap(gap="N")
             else:
-                genome.seq = genome.seq + part.seq*int(args.copy_number[i])
+                genome.seq = genome.seq + part.seq.ungap(gap="N") * int(args.copy_number[i])
 
     return target_dict, genome.seq.upper()
 
 def initialize_logger(output_file):
     #creating a basic logger
     logging.basicConfig(level=logging.INFO,
-                        filename= output_file + '/run.log',
+                        filename=output_file + '/run.log',
                         filemode='w')
     console_logger = logging.StreamHandler()
     console_logger.setLevel(logging.INFO)
@@ -93,7 +94,7 @@ def main():
 
     #Create the path of the created genome file
     genome_location = args.output_path + '/Run_Genome'
-    try: 
+    try:
         os.makedirs(args.output_path)
     except FileExistsError:
         pass
@@ -110,7 +111,7 @@ def main():
 
     # Select the guides based on the purpose and the azimuth model
     guide_list = guide_generator.select_guides(target_dict, args)
-    #Initialize the logger 
+    #Initialize the logger
     initialize_logger(args.output_path)
 
     # Build and run the model
