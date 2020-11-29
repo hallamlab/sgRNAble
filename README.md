@@ -14,7 +14,7 @@ What things you need to install the software and how to install them
 
 ### Installation Guide
 
-Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies. Start this process by navigating to the path of the github download(inside the folder). 
+Prior to installation,it is best practise to create a new enviroment to store the program and dependencies locally. This setup will create an conda environment with the name sgRNAble and install all required dependencies. Start this process by navigating to the path of the github download(inside the folder).
 
 ```
 cd PATH/TO/sgRNAble
@@ -48,8 +48,14 @@ sgrnable -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.
 ## Authors
 * [Siddarth Raghuvanshi](https://github.com/Siddarth-Raghuvanshi)
 * [Ahmed Abdelmoneim](https://github.com/AhmedAbdelmoneim)
-* Avery Noonan
+* [Avery Noonan](https://github.com/Noonanav)
 
 ## Contact
 
 Need something? Send me an email at Raghuvanshi.Siddarth@gmail.com
+
+## References
+
+Farasat, I., & Salis, H. M. (2016). A Biophysical Model of CRISPR/Cas9 Activity for Rational Design of Genome Editing and Gene          Regulation. _PLOS Computational Biology_, 12(1), e1004724. doi:10.1371/journal.pcbi.1004724
+
+Doench, J. G., Fusi, N., Sullender, M., Hegde, M., Vaimberg, E. W., Donovan, K. F., . . . Root, D. E. (2016). Optimized sgRNA design to maximize activity and minimize off-target effects of CRISPR-Cas9. _Nature biotechnology_, 34, 184. doi:10.1038/nbt.3437

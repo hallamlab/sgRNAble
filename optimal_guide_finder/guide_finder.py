@@ -23,8 +23,8 @@ def init_parser():
         ArgumentParser -- parser ready to accept arguments
     """
     # Parser to get the files listed in the arguments
-    parser = argparse.ArgumentParser(description="""This program helps you to find all possible guide RNAs that will 
-                                       target the gene. Then using the model created by Salis Lab, 
+    parser = argparse.ArgumentParser(description="""This program helps you to find all possible guide RNAs that will
+                                       target the gene. Then using the model created by Salis Lab,
                                        you can see the off target effects for the each possible guide.""",
                                      formatter_class=argparse.RawTextHelpFormatter)
 
@@ -34,7 +34,7 @@ def init_parser():
     parser.add_argument("-g", "--genome_sequence", required=True, nargs='+',
                         help="""The Genome of the organism, if targeting a plasmid, make sure to \n
                               include it as well (Fasta or Genebank)""")
-    parser.add_argument("-a", "--azimuth_cutoff", type=int, required=False, 
+    parser.add_argument("-a", "--azimuth_cutoff", type=int, required=False,
                         default=10, help="""How many guides should pass from azimuth screening,
                               the guides are passed based on descending azimuth prediction score""")
     parser.add_argument("-o", "--output_path", required=False, default="output",
@@ -60,7 +60,7 @@ def get_sequence(args):
         args.target_sequence, "fasta"))
 
     for name in target_dict:
-        target_dict[name] = target_dict[name].seq.ungap(gap="N").upper()
+        target_dict[name] = target_dict[name].seq.upper()
 
     # Reads the Genome files using biopython and combines them into one genome object
     genome = SeqRecord(Seq(""))
@@ -68,9 +68,9 @@ def get_sequence(args):
         genome_parts = SeqIO.parse(args.genome_sequence[i], "fasta")
         for part in genome_parts:
             if args.copy_number == 1:
-                genome.seq = genome.seq + part.seq.ungap(gap="N")
+                genome.seq = genome.seq + part.seq
             else:
-                genome.seq = genome.seq + part.seq.ungap(gap="N") * int(args.copy_number[i])
+                genome.seq = genome.seq + part.seq * int(args.copy_number[i])
 
     return target_dict, genome.seq.upper()
 

@@ -3,6 +3,7 @@ import time
 from multiprocessing import Process, Queue, Pool
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from optimal_guide_finder.cas_model import CasModel
 import logging
 logger = logging.getLogger(__name__)
