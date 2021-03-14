@@ -40,16 +40,15 @@ def find_pams(sequence):
 
     return locations
 
-def select_guides(target_dict, args):
+def select_guides(target_dict, purpose, azimuth_cutoff):
     """
     TODO: Seperate the different elif statements into functions
-    TODO: Don't pass in entire args object, pass in fields needed
     """
     # Obtain the Guide RNAs from the Target Sequence
     guide_list = {}
 
     # Default purpose, the tool looks for all avalible guides possibly found in the sequence given by the user
-    if args.purpose == "d":
+    if purpose == "d":
         for gene in target_dict:
             # Get guides on the positive strand
             guide_list[gene] = []
@@ -79,14 +78,14 @@ def select_guides(target_dict, args):
 
             # Run the model through the Azimuth Model
             predictions = model_comparison.predict(np.array(guides))
-            guides = [x for y, x in sorted(zip(predictions, guides), reverse=True)][:args.azimuth_cutoff]
-            locations = [x for y, x in sorted(zip(predictions, locations), reverse=True)][:args.azimuth_cutoff]
-            strand_array = [x for y, x in sorted(zip(predictions, strand_array), reverse=True)][:args.azimuth_cutoff]
+            guides = [x for y, x in sorted(zip(predictions, guides), reverse=True)][:azimuth_cutoff]
+            locations = [x for y, x in sorted(zip(predictions, locations), reverse=True)][:azimuth_cutoff]
+            strand_array = [x for y, x in sorted(zip(predictions, strand_array), reverse=True)][:azimuth_cutoff]
             guides = [guide[4:24] for guide in guides]
             guide_list[gene].extend([guides, locations, strand_array])
 
     # only runs the negative strand as CRISPRi works better on negative strands
-    elif args.purpose == "i":
+    elif purpose == "i":
         for gene in target_dict:
             # Get guides on the negative strand
             guide_list[gene] = []
@@ -107,13 +106,13 @@ def select_guides(target_dict, args):
 
             # Run the model through the Azimuth Model
             predictions = model_comparison.predict(np.array(guides))
-            guides = [x for y, x in sorted(zip(predictions, guides), reverse=True)][:args.azimuth_cutoff]
-            locations = [x for y, x in sorted(zip(predictions, locations), reverse=True)][:args.azimuth_cutoff]
-            strand_array = [x for y, x in sorted(zip(predictions, strand_array), reverse=True)][:args.azimuth_cutoff]
+            guides = [x for y, x in sorted(zip(predictions, guides), reverse=True)][:azimuth_cutoff]
+            locations = [x for y, x in sorted(zip(predictions, locations), reverse=True)][:azimuth_cutoff]
+            strand_array = [x for y, x in sorted(zip(predictions, strand_array), reverse=True)][:azimuth_cutoff]
             guides = [guide[4:24] for guide in guides]
             guide_list[gene].extend([guides, locations, strand_array])
 
-    elif args.purpose == "g":
+    elif purpose == "g":
         pass
 
     return guide_list
