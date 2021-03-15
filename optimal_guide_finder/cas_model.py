@@ -1,17 +1,17 @@
 """
 Module responsible for calculating the per guide binding
 """
+import logging
 import numpy as np
 import scipy.io
 from Bio import SeqIO
-from numba import types
-from numba import jit, float64, int32
-import logging
+from numba import jit
 from tqdm import tqdm
-logger = logging.getLogger(__name__)
 
 class CasModel():
-
+    """
+    Model for Cas9 binding based on biophysical properties of DNA binding
+    """
     RT = 0.61597
 
     # the PAMs with the highest dG, ignoring other PAM sequences by setting their dG to 0
@@ -22,24 +22,22 @@ class CasModel():
         'TAT': -7.2, 'TAG': -7.2, 'GAA': -7.2, 'GAT': -7.3, 'GAC': -7.2, 'GAG': -7.3
     }
 
-    def __init__(self, filename, quick_mode=True, model_name='data/InvitroModel.mat'):
+    def __init__(self, filename, model_name='data/InvitroModel.mat'):
         """
-        Initialize a CasCalculator object
+        Initialize a CasModel object
 
         Arguments:
-            filename {str} -- TODO
+            filename {string} -- location of saved genome and target
 
         Keyword Arguments:
-            quick_mode {bool} -- TODO (default: {True})
             model_name {str} -- path to mat file containing model data (default: {'data/InvitroModel.mat'})
         """
-        self._quick_mode = quick_mode
+        self._logger = logging.getLogger(__name__)
         self._model_name = model_name
         self._nt_mismatch_in_first8_list = []
 
         data = scipy.io.loadmat(self._model_name)
 
-        # TODO: Get rid of this field eventually
         self._weights = data['w1']
         self._new_weights = np.array([weight[0]*2.3 for weight in self._weights])
         self._dec_nn = data['decNN']
@@ -48,67 +46,80 @@ class CasModel():
 
     def print_model_info(self):
         """
-        TODO: refactor this function to work with the current format of weights arr
+        Prints current model information
         """
-        m = 0
-        s = 0
+        count = 0
+        sums = 0
         negative_val = 0
-        for i, l in enumerate(self._dec_nn):
-            for j, e in enumerate(l):
-                if float(e) < 0:
+        for i, mismatch in enumerate(self._dec_nn):
+            for j, energy in enumerate(mismatch):
+                if float(energy) < 0:
                     negative_val += 1
                 if i != j:
-                    s += float(e)
-                    m += 1
-        meanNN = float(s)/float(m)
+                    sums += float(energy)
+                    count += 1
+        mean_nn = float(sums)/float(count)
 
-        sw = 0
-        for w in self._weights:
-            sw += w
+        sum_weights = 0
+        for weight in self._weights:
+            sum_weights += weight
+        meanw = sum_weights/len(self._weights)
 
-        meanw = sw/len(self._weights)
-        print('average mismatchc energy: ', meanNN)
-        print('average weight:', meanw)
-        print('number of negative energies: ', negative_val)
+        self._logger.info("Average mismatch energy: %d", mean_nn)
+        self._logger.info("Average weight: %d", meanw)
+        self._logger.info("Number of negative energies: %d", negative_val)
 
     def get_all_pams(self):
+        """
+        Generates a list of all possible PAMs
+
+        Yields:
+            [string]: Pam seqs
+        """
         # PAM part will be 'GGT'
         for (pam_part, _) in sorted(list(self._PAM_ENERGY.items()), key=lambda x: x[1]):
-            for nt in ('A', 'G', 'C', 'T'):  # nt + PAMpart will be all possible 'NGGT'
-                yield nt + pam_part
+            for nucleotide in ('A', 'G', 'C', 'T'):  # nt + PAMpart will be all possible 'NGGT'
+                yield nucleotide + pam_part
 
     def calc_dg_pam(self, pam_full_seq):
         """
-        TODO: This function is not used any where
+        Calculates the delta-G for full pam sequence
         """
         # PAM sequence is 5' - N xxx N - 3' where the energy of xxx is listed below.
         # a normal PAM of 'NGG' with 'TC' afterwards would be listed as 'GGT'
         key = pam_full_seq[1:4]
         if key in self._PAM_ENERGY:
             return self._PAM_ENERGY[key]
-        else:
-            return 0.0
+
+        return 0.0
 
     def calc_dg_exchange(self, guide_seq, target_seq):
+        """
+        Calculate the Delta-G Exchange for guide and target sequences
+        """
         self._nt_mismatch_in_first8_list = []
 
-        if self._quick_mode:
-            solverfunc = self._quick_calc_exchange_energy
-        else:
-            # solverfunc = self._calc_exchange_energy (Refer to older commits for this version of the function)
-            pass
-
+        solverfunc = self._quick_calc_exchange_energy
         dg_exchange = solverfunc(self._new_weights, guide_seq, target_seq)
 
         return dg_exchange
 
     def calc_dg_supercoiling(self, sigma_initial, target_seq):
+        """
+        Calculate the Delta-G supercoiling for guide and target sequences
+        """
         sigma_final = -0.08
         dg_supercoiling = 10.0 * \
             len(target_seq) * self.RT * (sigma_final**2 - sigma_initial**2)
         return dg_supercoiling
 
     def _init_genome_finder(self, filename):
+        """
+        Initializes genome dictionary by finding all potrntial locations in genome for off-target binding
+
+        Args:
+            filename (string): Path to genome and target files
+        """
         genome_dictionary = {}
 
         handle = open(filename, 'r')
@@ -120,7 +131,7 @@ class CasModel():
 
         positions_at_mers = self._identify_nucleotide_positions_of_mers(full_sequence, 10)
 
-        logger.info("Identifying target sites...")
+        self._logger.info("Identifying target sites...")
         genome_dictionary[filename] = {}
         target_sequence_list = []
         mers_omitted_tally = 0
@@ -129,33 +140,24 @@ class CasModel():
             target_list_output = \
                 self._identify_target_sequences_matching_pam(full_pam, positions_at_mers, full_sequence)
             target_sequence_list = target_list_output[0]
-                # self._identify_target_sequences_matching_pam(full_pam, positions_at_mers, full_sequence)[0]
             mers_omitted_tally += target_list_output[1]
             genome_dictionary[filename][full_pam] = target_sequence_list
 
-        logger.error(str(str(mers_omitted_tally) + ' k-mers with non-nucleotide characters omitted from target list'))
+        if mers_omitted_tally > 0:
+            self._logger.error('%d k-mers with non-nucleotide characters omitted from target list', mers_omitted_tally)
 
         self.genome_dictionary = genome_dictionary
 
     @staticmethod
-    #@jit('float64(float64[:], int32[:], int32[:])', nopython=True)
     @jit(nopython=True)
     def _quick_calc_exchange_energy(weights, cr_rna, target_seq):
         """
-        calculate the delta G value a potential guide against the target sequence
+        Calculate the delta G value a potential guide against the target sequence
         this method is made static to allow compilation with numba for speed-up
-
-        Arguments:
-            weights {np-arr} -- [description]
-            cr_rna {np-arr} -- [description]
-            target_seq {[type]} -- [description]
-
-        Returns:
-            [folat] -- delta G value
         """
         dg = 0
         for i in range(len(cr_rna)):
-            pos = 20 - i # TODO: magic number
+            pos = 20 - i
             if cr_rna[i] == target_seq[i]:
                 continue
             else:
@@ -212,7 +214,9 @@ class CasModel():
             except KeyError:
                 non_nucleotide_count += 1
             counter += 1
-        logger.error(str(str(non_nucleotide_count) + ' k-mers with non-nucleotide characters identified'))
+
+        if non_nucleotide_count > 0:
+            self._logger.error('%d k-mers with non-nucleotide characters identified', non_nucleotide_count)
 
         return positions_at_mers
 

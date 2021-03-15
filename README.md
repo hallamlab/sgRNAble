@@ -1,6 +1,6 @@
 # sgRNAble
 
-Abstract
+Tool for high-throughput design of sgRNA libraries targeting selected genes or whole genomes, while considering both on-target binding potential and off-target effects of a given sgRNA in a user-defined genome.
 
 ## Installation
 
@@ -37,12 +37,12 @@ conda deactivate
 Ensure that you have a file containing the gene of interest (Target Sequence), the genome of the organism (Genome), and
 any additional DNA present. The gene of interest must be present in the genome or the other additional DNA added to the script.
 
-navigate to the folder in terminal and type in
+To start a test run targeting GFP in E.Coli genome, navigate to repository root and run the following command:
 
 ```
 pip install .
 
-sgrnable -t data/Fasta_Files/GFP.fasta -g data/Fasta_Files/E_coli_MG1655_genome.fasta data/Fasta_Files/GFP.fasta
+sgrnable -t tests/data/gfp.fasta -g tests/data/ecoli_genome.fasta tests/data/gfp.fasta -th 4
 ```
 
 ## Authors

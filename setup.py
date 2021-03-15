@@ -1,3 +1,6 @@
+"""
+Setup file for making the package pip installable
+"""
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -8,7 +11,7 @@ setuptools.setup(
     version="0.0.1",
     author="Avery Noonan, Siddarth Raghuvanshi, Ahmed Abdelmoneim",
     author_email="sidr97@gmail.com",
-    description="",
+    description="CRISPR-Cas9 single guide RNA generation tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Siddarth-Raghuvanshi/CRISPR-Guide-RNA",
