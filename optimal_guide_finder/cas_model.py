@@ -1,6 +1,7 @@
 """
 Module responsible for calculating the per guide binding
 """
+import os
 import logging
 import numpy as np
 import scipy.io
@@ -32,6 +33,8 @@ class CasModel():
         Keyword Arguments:
             model_name {str} -- path to mat file containing model data (default: {'data/InvitroModel.mat'})
         """
+        root_path = os.path.dirname(__file__)
+        model_name = os.path.join(root_path, model_name)
         self._logger = logging.getLogger(__name__)
         self._model_name = model_name
         self._nt_mismatch_in_first8_list = []

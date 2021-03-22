@@ -32,6 +32,13 @@ sgrnable -t TARGET_FILE -g GENOME_FILE
 conda deactivate
 ```
 
+### Running Tests
+To run package tests, cd into the project directory and run the following command. This installs any missing dependencies and runs package tests.
+
+```
+python setup.py test
+```
+
 ## Quick Run Guide
 
 Ensure that you have a file containing the gene of interest (Target Sequence), the genome of the organism (Genome), and
@@ -44,6 +51,21 @@ pip install .
 
 sgrnable -t tests/data/gfp.fasta -g tests/data/ecoli_genome.fasta tests/data/gfp.fasta -th 4
 ```
+
+## Distribution Guide
+
+For pushing tool to PyPi and Conda
+
+### Versioning
+Update version number in setup.py. Number is in the format major.minor.patch
+* for small updates increment patch number
+* for minor features increment minor number
+* for major features increment major number
+
+### PyPi
+1. Build source distribution by running ```python setup.py sdist```
+2. Ensure twine is installed ```pip install twine```
+3. Push source to Pypi by running ```twine upload dist/*```
 
 ## Authors
 * [Siddarth Raghuvanshi](https://github.com/Siddarth-Raghuvanshi)
