@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sgRNAble",
-    version="1.0.8",
+    version="1.0.10",
     author="Avery Noonan, Siddarth Raghuvanshi, Ahmed Abdelmoneim",
     author_email="sidr97@gmail.com",
     description="CRISPR-Cas9 single guide RNA generation tool",
