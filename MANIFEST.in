@@ -1,1 +1,2 @@
-include optimal_guide_finder/Azimuth_Model/saved_models/* data/*
+include data/InvitroModel.mat
+include optimal_guide_finder/Azimuth_Model/saved_models/*
