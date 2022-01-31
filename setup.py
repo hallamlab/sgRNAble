@@ -31,7 +31,7 @@ setuptools.setup(
         "biopython",
         "matplotlib",
         "numba",
-        "numpy==1.16.6",
+        "numpy==1.21.0",
         "pandas",
         "psutil",
         "scikit-learn==0.20.4",
