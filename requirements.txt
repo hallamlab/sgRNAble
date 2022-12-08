@@ -1,5 +1,5 @@
 biopython==1.79
-certifi==2021.10.8
+certifi==2022.12.7
 cycler==0.11.0
 fonttools==4.31.1
 kiwisolver==1.4.0
